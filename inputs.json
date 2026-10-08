@@ -1,0 +1,26 @@
+{
+  "mission": {
+    "range": 1000000,
+    "cruise_speed": 83.33,
+    "stall_speed": 20.0
+  },
+  "aero": {
+    "c_l_max_3d": 1.43
+  },
+  "mass": {
+    "fuel": 6.2,
+    "rest": 13.8
+  },
+  "engine": {
+    "p_max": 4.97,
+    "fuel_cons": 0.44,
+    "engine_eff": 0.2,
+    "prop_eff": 0.75
+  },
+  "geometry": {
+    "AR": 8,
+    "taper": 0.45,
+    "oswald_eff": 0.8,
+    "frontal_area": 0.15
+  }
+}
