@@ -20,7 +20,6 @@
   "geometry": {
     "AR": 8,
     "taper": 0.45,
-    "oswald_eff": 0.8,
-    "frontal_area": 0.15
+    "oswald_eff": 0.8
   }
 }

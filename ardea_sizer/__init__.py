@@ -1,5 +1,9 @@
-from ardea_sizer.inputs import Inputs
+from ardea_sizer._base import Base
+from pathlib import Path
 
 __all__ = [
-    "Inputs",
+
 ]
+
+def open(path: str | Path) -> Base:
+    return Base.from_json(path)
