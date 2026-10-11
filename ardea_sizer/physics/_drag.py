@@ -1,4 +1,6 @@
 from numpy.typing import ArrayLike
 
-def get_total_drag() -> ArrayLike:
-    return 2.0
+
+# TODO
+def get_c_d_0() -> ArrayLike:
+    return 0.0215
