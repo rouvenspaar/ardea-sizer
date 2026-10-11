@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from ._constants import G
 
 
 class FrozenModel(BaseModel):
@@ -13,6 +12,7 @@ class Mission(FrozenModel):
     range: float
     cruise_speed: float
     stall_speed: float
+    payload: float
 
     @model_validator(mode="after")
     def validate_speeds(self) -> Self:
@@ -21,18 +21,8 @@ class Mission(FrozenModel):
         return self
 
 
-class Aero(FrozenModel):
-    c_l_max_3d: float
-
-
 class Mass(FrozenModel):
-    fuel: float
-    rest: float
-
-    @property
-    def total(self) -> float:
-        """Take-off mass in kg."""
-        return self.fuel + self.rest
+    fuselage: float
 
 
 class Engine(FrozenModel):
@@ -42,29 +32,22 @@ class Engine(FrozenModel):
     prop_eff: float = Field(gt=0, le=1)
 
 
-class Geometry(FrozenModel):
-    AR: float
-    taper: float
+class Assumptions(FrozenModel):
+    c_l_max_3d: float
     oswald_eff: float
 
 
 class Base(FrozenModel):
     mission: Mission
-    aero: Aero
     mass: Mass
     engine: Engine
-    geometry: Geometry
+    assumptions: Assumptions
 
     @classmethod
     def from_json(cls, path: str | Path) -> Self:
         return cls.model_validate_json(
             Path(path).read_text(encoding="utf-8")
         )
-
-    @property
-    def total_weight(self) -> float:
-        """Take-off weight in N."""
-        return self.mass.total * G
 
     def with_(self, **changes) -> Self:
         """Copy with changed values, supporting dotted paths."""

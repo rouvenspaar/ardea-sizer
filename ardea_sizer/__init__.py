@@ -8,5 +8,3 @@ __all__ = [
 
 def load(path: str | Path) -> Base:
     return Base.from_json(path)
-
-# choose AR & fuel weight -> calculate MTOW -> wing area -> Drag -> Range -> Power
