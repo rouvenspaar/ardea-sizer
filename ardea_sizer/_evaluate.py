@@ -6,7 +6,7 @@ from ardea_sizer.physics import (
     get_range,
     get_required_power,
     get_total_mass,
-    get_wing_area, get_c_d, get_c_l,
+    get_wing_area, get_c_d, get_c_l, get_drag_force_cruise, get_effective_power,
 )
 from ardea_sizer.physics import get_dynamic_pressure
 
@@ -14,8 +14,6 @@ from ardea_sizer.physics import get_dynamic_pressure
 def evaluate(base: Base, *, aspect_ratio: ArrayLike, fuel_mass: ArrayLike):
     """Choose AR & fuel mass -> MTOW -> wing area -> drag -> range -> power."""
     m, e, a = base.mission, base.engine, base.assumptions
-    bsfc = e.fuel_cons / 3.6e6  # kg/kWh -> kg/J
-    p_max = e.p_max * 1000      # kW -> W
 
     q_cruise = get_dynamic_pressure(v=m.cruise_speed)
     q_stall = get_dynamic_pressure(v=m.stall_speed)
@@ -32,15 +30,26 @@ def evaluate(base: Base, *, aspect_ratio: ArrayLike, fuel_mass: ArrayLike):
     c_l_cruise = get_c_l(mass=mass, wing_area=wing_area, q=q_cruise)
     c_d_cruise = get_c_d()
 
-    flight_range = get_range(
-        c_l=c_l_cruise,
-        c_d=c_d_cruise,
-        mtow=mass,
-        fuel_mass=fuel_mass,
-        prop_eff=e.prop_eff,
-        sfc=e.fuel_cons,
+    thrust_req = get_drag_force_cruise()
+    power_eff = get_effective_power(
+        thrust=thrust_req,
+        v=m.cruise_speed,
+        prop_eff=e.prop_eff
     )
-
     power_req = get_required_power()
 
-    print(flight_range)
+    if power_req < power_eff:
+        # bool = false
+        flight_range = get_range(
+            c_l=c_l_cruise,
+            c_d=c_d_cruise,
+            mtow=mass,
+            fuel_mass=fuel_mass,
+            prop_eff=e.prop_eff,
+            sfc=e.fuel_cons,
+        )
+    else:
+        flight_range = 0
+
+
+    print(flight_range/1000)
