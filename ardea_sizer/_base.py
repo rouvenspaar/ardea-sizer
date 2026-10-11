@@ -35,6 +35,7 @@ class Engine(FrozenModel):
 class Assumptions(FrozenModel):
     c_l_max_3d: float
     oswald_eff: float
+    delta_c_l_flap: float
 
 
 class Base(FrozenModel):

@@ -16,6 +16,7 @@
   },
   "assumptions": {
     "c_l_max_3d": 1.43,
-    "oswald_eff": 0.8
+    "oswald_eff": 0.8,
+    "delta_c_l_flap": 0.59
   }
 }

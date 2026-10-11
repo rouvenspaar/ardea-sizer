@@ -25,11 +25,7 @@ def evaluate(base: Base, *, aspect_ratio: ArrayLike, fuel_mass: ArrayLike):
     wing_area = get_wing_area(
         mass=mass,
         v_stall=m.stall_speed,
-        c_l_max=a.c_l_max_3d + a.delta_c_l_flap,
-        v_cruise=m.cruise_speed,
-        aspect_ratio=aspect_ratio,
-        oswald_eff=a.oswald_eff,
-        c_d0=a.c_d0,
+        c_l_max=a.c_l_max_3d + a.delta_c_l_flap
     )
     span = np.sqrt(aspect_ratio * wing_area)
 
