@@ -29,7 +29,7 @@ def evaluate(base: Base, *, aspect_ratio: ArrayLike, fuel_mass: ArrayLike) -> Pl
     q_cruise = get_dynamic_pressure(v=m.cruise_speed)
     q_stall = get_dynamic_pressure(v=m.stall_speed)
 
-    mass = get_total_mass()
+    mass = get_total_mass(fuel_mass=fuel_mass)
 
     wing_area = get_wing_area(
         mass=mass,

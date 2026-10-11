@@ -10,7 +10,7 @@
   },
   "engine": {
     "p_max": 4.97,
-    "fuel_cons": 0.44,
+    "fuel_cons": 0.45,
     "engine_eff": 0.2,
     "prop_eff": 0.75
   },

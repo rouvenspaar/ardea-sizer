@@ -13,7 +13,7 @@ def get_c_d(
 
 # TODO
 def get_c_d_0() -> ArrayLike:
-    return 0.0215
+    return 0.025
 
 def get_drag_force(
     *,
