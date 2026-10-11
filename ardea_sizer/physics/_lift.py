@@ -15,8 +15,7 @@ def get_c_l(
 def get_wing_area(
     *,
     mass: ArrayLike,
-    v_stall: ArrayLike,
+    q_stall: ArrayLike,
     c_l_max: ArrayLike,
-    rho: ArrayLike = RHO,
 ) -> ArrayLike:
-    return (2 * mass * G) / (rho * v_stall**2 * c_l_max)
+    return (mass * G) / (q_stall * c_l_max)
