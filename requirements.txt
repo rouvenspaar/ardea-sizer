@@ -1,0 +1,10 @@
+# Python 3.11 or 3.13 (OpenVSP ships Python modules only for these versions)
+numpy>=2.1
+pydantic>=2.8
+
+# notebook.ipynb
+ipykernel
+
+# OpenVSP is not on PyPI. Download the win64 zip matching your Python version
+# from https://openvsp.org/download.php, unzip it to a permanent location and run
+#   pip install -r <OpenVSP folder>/python/requirements.txt
