@@ -11,10 +11,6 @@ def get_c_d(
 ) -> ArrayLike:
     return c_d_0 + c_l**2 / (np.pi * oswald_eff * aspect_ratio)
 
-# TODO
-def get_c_d_0() -> ArrayLike:
-    return 0.025
-
 def get_drag_force(
     *,
     q: ArrayLike,

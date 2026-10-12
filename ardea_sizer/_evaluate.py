@@ -8,7 +8,7 @@ from ardea_sizer.physics import (
     get_range,
     get_required_power,
     get_total_mass,
-    get_wing_area, get_c_d, get_c_l, get_drag_force, get_c_d_0
+    get_wing_area, get_c_d, get_c_l, get_drag_force
 )
 from ardea_sizer.physics import get_dynamic_pressure
 
@@ -22,7 +22,7 @@ class Plane:
     chord: float
 
 
-def evaluate(base: Base, *, aspect_ratio: ArrayLike, fuel_mass: ArrayLike) -> Plane:
+def evaluate(base: Base, *, aspect_ratio: ArrayLike, fuel_mass: ArrayLike, c_d_0_cruise: float) -> Plane:
     """Choose AR & fuel mass -> MTOW -> wing area -> drag -> range -> power."""
     m, e, a = base.mission, base.engine, base.assumptions
 
@@ -40,7 +40,6 @@ def evaluate(base: Base, *, aspect_ratio: ArrayLike, fuel_mass: ArrayLike) -> Pl
     chord = wing_area / span
 
     c_l_cruise = get_c_l(mass=mass, wing_area=wing_area, q=q_cruise)
-    c_d_0_cruise = get_c_d_0()
     c_d_cruise = get_c_d(
         c_d_0=c_d_0_cruise,
         c_l=c_l_cruise,
