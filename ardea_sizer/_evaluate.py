@@ -8,9 +8,11 @@ from ardea_sizer.physics import (
     get_range,
     get_required_power,
     get_total_mass,
-    get_wing_area, get_c_d, get_c_l, get_drag_force
+    get_wing_area, get_c_d, get_c_l, get_drag_force, TimeSegment, FlightSegment, cruise_steps, fly_mission,
+    get_isa_density
 )
 from ardea_sizer.physics import get_dynamic_pressure
+from ardea_sizer._constants import FIELD_ALTITUDE
 
 @dataclass(frozen=True)
 class Plane:
@@ -26,8 +28,11 @@ def evaluate(base: Base, *, aspect_ratio: ArrayLike, fuel_mass: ArrayLike, c_d_0
     """Choose AR & fuel mass -> MTOW -> wing area -> drag -> range -> power."""
     m, e, a = base.mission, base.engine, base.assumptions
 
-    q_cruise = get_dynamic_pressure(v=m.cruise_speed)
-    q_stall = get_dynamic_pressure(v=m.stall_speed)
+    rho_takeoff = get_isa_density(altitude=FIELD_ALTITUDE)
+    rho_cruise = get_isa_density(altitude=FIELD_ALTITUDE + 120)
+
+    q_cruise = get_dynamic_pressure(v=m.cruise_speed, rho=rho_cruise)
+    q_stall = get_dynamic_pressure(v=m.stall_speed, rho=rho_takeoff)
 
     mass = get_total_mass(fuel_mass=fuel_mass)
 
@@ -54,16 +59,20 @@ def evaluate(base: Base, *, aspect_ratio: ArrayLike, fuel_mass: ArrayLike, c_d_0
         prop_eff=e.prop_eff
     )
 
+    segments = [
+        TimeSegment("Warm-up / taxi", duration=120, throttle=0.1, altitude=FIELD_ALTITUDE),
+        TimeSegment("Take-off", duration=30, throttle=1.0, altitude=FIELD_ALTITUDE),
+        FlightSegment("Climb", v=60, alt_start=440, alt_end=FIELD_ALTITUDE + 120, climb_rate=5),
+        *cruise_steps(name="Cruise", v=m.cruise_speed, altitude=FIELD_ALTITUDE + 120, n=20),
+        FlightSegment("Descent", v=60, alt_start=560, alt_end=FIELD_ALTITUDE, climb_rate=-3),
+        TimeSegment("Approach / landing", duration=120, throttle=0.1, altitude=FIELD_ALTITUDE),
+        FlightSegment("Reserve loiter", v=26, alt_start=560, alt_end=FIELD_ALTITUDE + 120, duration=0, enabled=False),
+    ]
     flight_range = get_range(
-        q=q_cruise,
-        wing_area=wing_area,
-        c_d_0=c_d_0_cruise,
-        oswald_eff=a.oswald_eff,
-        aspect_ratio=aspect_ratio,
-        mtow=mass,
-        fuel_mass=fuel_mass,
-        prop_eff=e.prop_eff,
-        sfc=e.fuel_cons,
+        segments,
+        fuel_mass=fuel_mass, mtow=mass, wing_area=wing_area, aspect_ratio=aspect_ratio,
+        c_d_0=c_d_0_cruise, oswald_eff=a.oswald_eff, prop_eff=e.prop_eff,
+        sfc=e.fuel_cons, p_max=e.p_max * 1000,
     )
 
     return Plane(

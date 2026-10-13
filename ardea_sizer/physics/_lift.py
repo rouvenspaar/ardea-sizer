@@ -1,7 +1,6 @@
-import numpy as np
 from numpy.typing import ArrayLike
 
-from ardea_sizer._constants import G, RHO
+from ardea_sizer._constants import G
 
 
 def get_c_l(
