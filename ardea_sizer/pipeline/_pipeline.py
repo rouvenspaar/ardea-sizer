@@ -1,8 +1,8 @@
 from numpy.typing import ArrayLike
 
 from ardea_sizer import evaluate
-from ardea_sizer._base import Base
-from ardea_sizer._open_vsp import optimize
+from ardea_sizer.models._base import Base
+from ardea_sizer.pipeline._open_vsp import optimize
 
 
 def run_pipeline(base: Base, *, aspect_ratio: ArrayLike):

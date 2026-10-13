@@ -3,25 +3,17 @@ from dataclasses import dataclass
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ardea_sizer._base import Base
+from ardea_sizer.models._base import Base
+from ardea_sizer.models._plane import Plane
 from ardea_sizer.physics import (
     get_range,
     get_required_power,
     get_total_mass,
-    get_wing_area, get_c_d, get_c_l, get_drag_force, TimeSegment, FlightSegment, cruise_steps, fly_mission,
-    get_isa_density
+    get_wing_area, get_c_d, get_c_l, get_drag_force, TimeSegment, FlightSegment, cruise_steps, get_isa_density
 )
 from ardea_sizer.physics import get_dynamic_pressure
 from ardea_sizer._constants import FIELD_ALTITUDE
 
-@dataclass(frozen=True)
-class Plane:
-    range: float
-    power_req: float
-    power_available: float
-    wing_area: float
-    span: float
-    chord: float
 
 # claude function
 def evaluate(
