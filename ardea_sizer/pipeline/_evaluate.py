@@ -3,8 +3,7 @@ from dataclasses import dataclass
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ardea_sizer.models._base import Base
-from ardea_sizer.models._plane import Plane
+from ardea_sizer.models import Base, Plane
 from ardea_sizer.physics import (
     get_range,
     get_required_power,
