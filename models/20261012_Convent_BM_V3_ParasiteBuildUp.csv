@@ -1,0 +1,22 @@
+PARASITE DRAG BUILD UP DATA 
+
+Mach, Altitude (m), Vinf (m/s), S_ref (m^2)
+0.245572, 600.000000, 83.000000, 0.400000 
+
+Temp (C), Pressure (lbf/ft^2), Density (kg/m^3) 
+11.100000, 1969.948930, 1.155956 
+
+Lam Cf Eqn, Turb Cf Eqn 
+Laminar Blasius, Compressible Schlichting 
+
+Component Name,S_wet (m^2),L_ref (m),t/c or d/l,FF,FF Eqn Type,Re,% Lam,Cf,Q (Interference Factor),f (m^2),Cd,% Total 
+ARDEA_D3_Stack,0.778728, 1.650698, 5.784164,1.144000, Hoerner Streamlined Body,8945219.828009, 0.000000,0.003058, 1.000000,0.002724, 0.006811, 37.259521 
+vertical stabilizer,0.061386, 0.082497, 0.100028,1.206063, Hoerner,447056.859420, 0.000000,0.005220, 1.000000,0.000386, 0.000966, 5.285475 
+Horizontal stabilizer,0.119298, 0.082497, 0.100028,1.206063, Hoerner,447056.859420, 0.000000,0.005220, 1.000000,0.000751, 0.001878, 10.271889 
+Main Wing,0.654769, 0.234331, 0.111291,1.231787, Hoerner,1269850.476207, 0.000000,0.004277, 1.000000,0.003450, 0.008625, 47.183115 
+
+Excrescences, Type, Input
+
+ , , , , , , , , , Geometry Sub-Total:, 0.007312, 0.018279, 100.000000 
+ , , , , , , , , , Excrescence Sub-Total:, 0.000000, 0.000000, 0.000000 
+ , , , , , , , , , Totals:, 0.007312, 0.018279, 100.000000 

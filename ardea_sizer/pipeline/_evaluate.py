@@ -18,60 +18,45 @@ from ardea_sizer._constants import FIELD_ALTITUDE
 def evaluate(
     base: Base,
     *,
-    aspect_ratio: ArrayLike,
     fuel_guess: float = 6.5,
     rel_tol: float = 1e-3,
     max_iter: int = 50,
 ) -> Plane:
     """Return the plane whose fuel mass covers mission range + reserve.
 
-    Solves range(fuel_mass) = target with a vectorised secant method, so every
-    element of `aspect_ratio` gets its own fuel mass.
+    Solves range(fuel_mass) = target with a secant method; all design inputs come from `base`.
     """
     m = base.mission
     target = m.range + m.reserve
     tol = rel_tol * abs(target)
-    shape = np.shape(aspect_ratio)
 
-    def run(fuel: np.ndarray) -> tuple[Plane, np.ndarray]:
-        plane = evaluate_from_fuel_mass(
-            base,
-            fuel_mass=fuel if fuel.ndim else float(fuel),
-        )
-        return plane, np.asarray(plane.range, dtype=float) - target
+    def run(fuel: float) -> tuple[Plane, float]:
+        plane = evaluate_from_fuel_mass(base, fuel_mass=fuel)
+        return plane, float(plane.range) - target
 
     # Two starting points for the secant
-    f0 = np.full(shape, fuel_guess, dtype=float)
+    f0, f1 = fuel_guess, 1.2 * fuel_guess
     _, r0 = run(f0)
-    f1 = 1.2 * f0
     plane, r1 = run(f1)
 
     for _ in range(max_iter):
-        done = np.abs(r1) <= tol
-        if done.all():
+        if abs(r1) <= tol:
             return plane
 
-        with np.errstate(divide="ignore", invalid="ignore"):
-            slope = (r1 - r0) / (f1 - f0)  # d(range)/d(fuel_mass)
-
-        bad = ~done & ~(slope > 0)
-        if bad.any():
+        slope = (r1 - r0) / (f1 - f0)  # d(range)/d(fuel_mass)
+        if not slope > 0:
             raise ValueError(
-                "Range does not increase with fuel mass for aspect_ratio="
-                f"{np.asarray(aspect_ratio)[bad] if shape else aspect_ratio}: "
+                "Range does not increase with fuel mass: "
                 "mission is not reachable (extra fuel costs more range than it adds)."
             )
 
-        step = np.where(done, 0.0, -r1 / np.where(done, 1.0, slope))
-        f_new = np.maximum(f1 + step, 0.5 * f1)  # never go negative / jump wildly down
-
         f0, r0 = f1, r1
-        f1 = f_new
+        f1 = max(f1 - r1 / slope, 0.5 * f1)  # never go negative / jump wildly down
         plane, r1 = run(f1)
 
     raise RuntimeError(
         f"Fuel iteration did not converge in {max_iter} steps "
-        f"(worst range error {np.max(np.abs(r1)):.3g})."
+        f"(range error {abs(r1):.3g})."
     )
 
 def evaluate_from_fuel_mass(base: Base, *, fuel_mass: ArrayLike) -> Plane:

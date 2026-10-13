@@ -1,0 +1,23 @@
+...Comp Geom...
+4 Num Comps
+6 Total Num Meshes
+19056 Total Num Tris
+
+Theo_Area   Wet_Area   Theo_Vol    Wet_Vol  Name
+    0.794      0.779      0.038      0.038  ARDEA_D3_Stack 
+    0.062      0.061      0.000      0.000  vertical stabilizer
+    0.123      0.119      0.000      0.000  Horizontal stabilizer
+    0.821      0.655      0.007      0.006  Main Wing      
+-------------------------------------------------
+    1.800      1.614      0.046      0.044  Totals         
+
+Tag_Theo_Area   Tag_Wet_Area    Tag_Name
+        0.794          0.779    ARDEA_D3_Stack_S_Surf0
+        0.062          0.061    vertical stabilizer_S_Surf0
+        0.062          0.060    Horizontal stabilizer_S_Surf0
+        0.062          0.060    Horizontal stabilizer_S_Surf1
+        0.410          0.327    Main Wing_S_Surf0
+        0.410          0.327    Main Wing_S_Surf1
+WARNING: 2 open meshes merged
+     Merged: Horizontal stabilizer
+     Merged: Main Wing

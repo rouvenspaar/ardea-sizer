@@ -1,0 +1,14 @@
+Name, Theo_Area, Wet_Area, Theo_Vol, Wet_Vol
+ARDEA_D3_Stack,0.794380,0.778728,0.038436,0.037882
+vertical stabilizer,0.062197,0.061386,0.000168,0.000167
+Horizontal stabilizer,0.123146,0.119298,0.000337,0.000328
+Main Wing,0.820524,0.654769,0.007282,0.005843
+Totals,1.800247,1.614181,0.046224,0.044220
+
+Tag_Name, Tag_Theo_Area, Tag_Wet_Area
+ARDEA_D3_Stack_S_Surf0,0.794380,0.778728
+vertical stabilizer_S_Surf0,0.062197,0.061386
+Horizontal stabilizer_S_Surf0,0.061573,0.059649
+Horizontal stabilizer_S_Surf1,0.061573,0.059649
+Main Wing_S_Surf0,0.410262,0.327385
+Main Wing_S_Surf1,0.410262,0.327385
