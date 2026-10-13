@@ -3,11 +3,24 @@
     "range": 1000000.0,
     "reserve": 50000.0,
     "cruise_speed": 83.33,
-    "stall_speed": 20.0,
-    "payload": 1.0
+    "stall_speed": 20.0
   },
-  "mass": {
-    "fuselage": 5.0
+  "masses": {
+    "propeller":         { "x": 0.040, "mass": 0.35 },
+    "prop_shaft":        { "x": 0.083, "mass": 0.15 },
+    "gearbox":           { "x": 0.158, "mass": 0.30 },
+    "engine":            { "x": 0.268, "mass": 3.50 },
+    "heat_shield":       { "x": 0.335, "mass": 0.00 },
+    "ecu":               { "x": 0.368, "mass": 0.10 },
+    "fuel_pump":         { "x": 0.365, "mass": 0.20 },
+    "fuel":              { "x": 0.465, "mass": 5.00 },
+    "payload":           { "x": 0.638, "mass": 1.00 },
+    "flight_controller": { "x": 0.803, "mass": 0.25 },
+    "electronics":       { "x": 0.803, "mass": 0.60 },
+    "battery":           { "x": 0.803, "mass": 0.50 },
+    "fuselage":          { "x": 0.612, "mass": 3.00 },
+    "tail":              { "x": 1.252, "mass": 0.40 },
+    "wing":              { "x": 0.489, "mass": 3.00 }
   },
   "engine": {
     "p_max": 4.97,
@@ -17,7 +30,10 @@
   },
   "assumptions": {
     "c_l_max_3d": 1.43,
+    "delta_c_l_flap": 0.59,
     "oswald_eff": 0.8,
-    "delta_c_l_flap": 0.59
+    "c_d_0": 0.022,
+    "wing_ar": 5.0,
+    "wing_tr": 0.45
   }
 }

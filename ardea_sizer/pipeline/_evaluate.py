@@ -19,7 +19,6 @@ def evaluate(
     base: Base,
     *,
     aspect_ratio: ArrayLike,
-    c_d_0_cruise: float,
     fuel_guess: float = 6.5,
     rel_tol: float = 1e-3,
     max_iter: int = 50,
@@ -37,9 +36,7 @@ def evaluate(
     def run(fuel: np.ndarray) -> tuple[Plane, np.ndarray]:
         plane = evaluate_from_fuel_mass(
             base,
-            aspect_ratio=aspect_ratio,
             fuel_mass=fuel if fuel.ndim else float(fuel),
-            c_d_0_cruise=c_d_0_cruise,
         )
         return plane, np.asarray(plane.range, dtype=float) - target
 
@@ -77,8 +74,8 @@ def evaluate(
         f"(worst range error {np.max(np.abs(r1)):.3g})."
     )
 
-def evaluate_from_fuel_mass(base: Base, *, aspect_ratio: ArrayLike, fuel_mass: ArrayLike, c_d_0_cruise: float) -> Plane:
-    """Choose AR & fuel mass -> MTOW -> wing area -> drag -> range -> power."""
+def evaluate_from_fuel_mass(base: Base, *, fuel_mass: ArrayLike) -> Plane:
+    """Choose AR & fuel mass -> MTOW -> wing -> stability -> drag -> range -> power."""
     m, e, a = base.mission, base.engine, base.assumptions
 
     rho_takeoff = get_isa_density(altitude=FIELD_ALTITUDE)
@@ -94,15 +91,15 @@ def evaluate_from_fuel_mass(base: Base, *, aspect_ratio: ArrayLike, fuel_mass: A
         q_stall=q_stall,
         c_l_max=a.c_l_max_3d + a.delta_c_l_flap
     )
-    span = np.sqrt(aspect_ratio * wing_area)
+    span = np.sqrt(a.wing_ar * wing_area)
     chord = wing_area / span
 
     c_l_cruise = get_c_l(mass=mass, wing_area=wing_area, q=q_cruise)
     c_d_cruise = get_c_d(
-        c_d_0=c_d_0_cruise,
+        c_d_0=a.c_d_0,
         c_l=c_l_cruise,
         oswald_eff=a.oswald_eff,
-        aspect_ratio=aspect_ratio,
+        aspect_ratio=a.wing_ar,
     )
 
     thrust_req = get_drag_force(q=q_cruise, c_d=c_d_cruise, wing_area=wing_area)
@@ -123,8 +120,8 @@ def evaluate_from_fuel_mass(base: Base, *, aspect_ratio: ArrayLike, fuel_mass: A
     ]
     flight_range = get_range(
         segments,
-        fuel_mass=fuel_mass, mtow=mass, wing_area=wing_area, aspect_ratio=aspect_ratio,
-        c_d_0=c_d_0_cruise, oswald_eff=a.oswald_eff, prop_eff=e.prop_eff,
+        fuel_mass=fuel_mass, mtow=mass, wing_area=wing_area, aspect_ratio=a.wing_ar,
+        c_d_0=a.c_d_0, oswald_eff=a.oswald_eff, prop_eff=e.prop_eff,
         sfc=e.fuel_cons, p_max=e.p_max * 1000,
     )
 

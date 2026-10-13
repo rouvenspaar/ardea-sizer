@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Self
+from typing import Iterator, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -13,7 +13,6 @@ class Mission(FrozenModel):
     reserve: float
     cruise_speed: float
     stall_speed: float
-    payload: float
 
     @model_validator(mode="after")
     def validate_speeds(self) -> Self:
@@ -22,8 +21,48 @@ class Mission(FrozenModel):
         return self
 
 
-class Mass(FrozenModel):
-    fuselage: float
+class MassPoint(FrozenModel):
+    x: float  # position from datum (nose), positive aft [m]
+    mass: float = Field(ge=0)  # [kg]
+
+
+class Masses(FrozenModel):
+    propeller: MassPoint  # incl. variable-pitch hub
+    prop_shaft: MassPoint
+    gearbox: MassPoint
+    engine: MassPoint
+    heat_shield: MassPoint
+    ecu: MassPoint
+    fuel_pump: MassPoint
+    fuel: MassPoint  # full tank
+    payload: MassPoint
+    flight_controller: MassPoint
+    electronics: MassPoint  # excl. flight controller & battery
+    battery: MassPoint
+    fuselage: MassPoint  # shell
+    tail: MassPoint  # H + V
+    wing: MassPoint
+
+    def dry(self) -> Iterator[tuple[str, MassPoint]]:
+        """All components except fuel, as (name, MassPoint)."""
+        for name in type(self).model_fields:
+            if name != "fuel":
+                yield name, getattr(self, name)
+
+    @property
+    def empty(self) -> float:
+        """Everything except fuel [kg]."""
+        return sum(p.mass for _, p in self.dry())
+
+    @property
+    def total(self) -> float:
+        """Empty mass plus full tank [kg]."""
+        return self.empty + self.fuel.mass
+
+    @property
+    def x_cg(self) -> float:
+        """Centre of gravity [m]. The tank sits at the CG, so fuel doesn't move it."""
+        return sum(p.mass * p.x for _, p in self.dry()) / self.empty
 
 
 class Engine(FrozenModel):
@@ -35,13 +74,16 @@ class Engine(FrozenModel):
 
 class Assumptions(FrozenModel):
     c_l_max_3d: float
-    oswald_eff: float
     delta_c_l_flap: float
+    oswald_eff: float
+    c_d_0: float
+    wing_ar: float
+    wing_tr: float
 
 
 class Base(FrozenModel):
     mission: Mission
-    mass: Mass
+    masses: Masses
     engine: Engine
     assumptions: Assumptions
 

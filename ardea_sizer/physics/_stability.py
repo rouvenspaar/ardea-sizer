@@ -1,81 +1,6 @@
-from dataclasses import dataclass, fields
-
-import numpy as np
-from numpy.typing import ArrayLike
-
 DIAMETER_TAIL_TUBE = 0.02
 HORIZONTAL_VOLUME_COEFFICIENT = 0.6
 CORRECTION_TAIL_ASSUMPTION = 1.0
-
-
-
-@dataclass
-class MassPoint:
-    x: float
-    mass: float
-
-
-@dataclass
-class Masses:
-    propeller: MassPoint  # incl. variable-pitch hub
-    prop_shaft: MassPoint
-    gearbox: MassPoint
-    engine: MassPoint
-    heat_shield: MassPoint
-    ecu: MassPoint
-    fuel_pump: MassPoint
-    fuel: MassPoint  # full tank
-    payload: MassPoint
-    flight_controller: MassPoint
-    electronics: MassPoint  # excl. flight controller & battery
-    battery: MassPoint
-    fuselage: MassPoint  # shell
-    tail: MassPoint  # H + V
-    wing: MassPoint
-
-    def _dry(self) -> list[MassPoint]:
-        return [getattr(self, f.name) for f in fields(self) if f.name != "fuel"]
-
-    @property
-    def empty(self) -> float:
-        """Everything except fuel."""
-        return sum(p.mass for p in self._dry())
-
-    def total(self, fuel_mass: ArrayLike | None = None) -> ArrayLike:
-        """fuel_mass=None -> full tank."""
-        fuel = self.fuel.mass if fuel_mass is None else fuel_mass
-        return self.empty + fuel
-
-    def x_cg(self, fuel_mass: ArrayLike | None = None) -> ArrayLike:
-        """fuel_mass=None -> full tank, 0 -> empty tank."""
-        fuel = self.fuel.mass if fuel_mass is None else fuel_mass
-        moment = sum(p.mass * p.x for p in self._dry()) + fuel * self.fuel.x
-        return moment / self.total(fuel_mass)
-
-
-masses = Masses(
-    propeller=MassPoint(x=0.040, mass=0.35),
-    prop_shaft=MassPoint(x=0.083, mass=0.15),
-    gearbox=MassPoint(x=0.158, mass=0.30),
-    engine=MassPoint(x=0.268, mass=3.50),
-    heat_shield=MassPoint(x=0.335, mass=0.0),  # mass not given yet
-    ecu=MassPoint(x=0.368, mass=0.10),
-    fuel_pump=MassPoint(x=0.365, mass=0.20),
-    fuel=MassPoint(x=0.465, mass=5.00),
-    payload=MassPoint(x=0.638, mass=1.00),
-    flight_controller=MassPoint(x=0.803, mass=0.25),
-    electronics=MassPoint(x=0.803, mass=0.60),
-    battery=MassPoint(x=0.803, mass=0.50),
-    fuselage=MassPoint(x=0.612, mass=3.00),
-    tail=MassPoint(x=1.252, mass=0.40),
-    wing=MassPoint(x=0.489, mass=3.00),
-)
-
-def get_cg(masses: Masses) -> float:
-    dry = [getattr(masses, f.name) for f in fields(masses) if f.name != "fuel"]
-    x = np.array([p.x for p in dry], dtype=float)
-    m = np.array([p.mass for p in dry], dtype=float)
-    return float(m @ x / m.sum())  # sum(m_i * x_i) / sum(m_i)
 
 
 """Longitudinal static stability: tail sizing, neutral point, static margin, trim.
@@ -83,8 +8,8 @@ def get_cg(masses: Masses) -> float:
 All angles in radians, all lengths in metres, positions measured from the datum (nose), positive aft.
 """
 
-#import numpy as np
-#from numpy.typing import ArrayLike
+import numpy as np
+from numpy.typing import ArrayLike
 
 
 # --------------------------------------------------------------------------- #
@@ -92,6 +17,7 @@ All angles in radians, all lengths in metres, positions measured from the datum 
 # --------------------------------------------------------------------------- #
 
 
+# TODO: Noel
 def get_optimal_tail_arm(
     *,
     mac: ArrayLike,
