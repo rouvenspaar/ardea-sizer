@@ -23,8 +23,70 @@ class Plane:
     span: float
     chord: float
 
+# claude function
+def evaluate(
+    base: Base,
+    *,
+    aspect_ratio: ArrayLike,
+    c_d_0_cruise: float,
+    fuel_guess: float = 6.5,
+    rel_tol: float = 1e-3,
+    max_iter: int = 50,
+) -> Plane:
+    """Return the plane whose fuel mass covers mission range + reserve.
 
-def evaluate(base: Base, *, aspect_ratio: ArrayLike, fuel_mass: ArrayLike, c_d_0_cruise: float) -> Plane:
+    Solves range(fuel_mass) = target with a vectorised secant method, so every
+    element of `aspect_ratio` gets its own fuel mass.
+    """
+    m = base.mission
+    target = m.range + m.reserve
+    tol = rel_tol * abs(target)
+    shape = np.shape(aspect_ratio)
+
+    def run(fuel: np.ndarray) -> tuple[Plane, np.ndarray]:
+        plane = evaluate_from_fuel_mass(
+            base,
+            aspect_ratio=aspect_ratio,
+            fuel_mass=fuel if fuel.ndim else float(fuel),
+            c_d_0_cruise=c_d_0_cruise,
+        )
+        return plane, np.asarray(plane.range, dtype=float) - target
+
+    # Two starting points for the secant
+    f0 = np.full(shape, fuel_guess, dtype=float)
+    _, r0 = run(f0)
+    f1 = 1.2 * f0
+    plane, r1 = run(f1)
+
+    for _ in range(max_iter):
+        done = np.abs(r1) <= tol
+        if done.all():
+            return plane
+
+        with np.errstate(divide="ignore", invalid="ignore"):
+            slope = (r1 - r0) / (f1 - f0)  # d(range)/d(fuel_mass)
+
+        bad = ~done & ~(slope > 0)
+        if bad.any():
+            raise ValueError(
+                "Range does not increase with fuel mass for aspect_ratio="
+                f"{np.asarray(aspect_ratio)[bad] if shape else aspect_ratio}: "
+                "mission is not reachable (extra fuel costs more range than it adds)."
+            )
+
+        step = np.where(done, 0.0, -r1 / np.where(done, 1.0, slope))
+        f_new = np.maximum(f1 + step, 0.5 * f1)  # never go negative / jump wildly down
+
+        f0, r0 = f1, r1
+        f1 = f_new
+        plane, r1 = run(f1)
+
+    raise RuntimeError(
+        f"Fuel iteration did not converge in {max_iter} steps "
+        f"(worst range error {np.max(np.abs(r1)):.3g})."
+    )
+
+def evaluate_from_fuel_mass(base: Base, *, aspect_ratio: ArrayLike, fuel_mass: ArrayLike, c_d_0_cruise: float) -> Plane:
     """Choose AR & fuel mass -> MTOW -> wing area -> drag -> range -> power."""
     m, e, a = base.mission, base.engine, base.assumptions
 

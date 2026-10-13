@@ -1,6 +1,7 @@
 {
   "mission": {
     "range": 1000000.0,
+    "reserve": 50000.0,
     "cruise_speed": 83.33,
     "stall_speed": 20.0,
     "payload": 1.0

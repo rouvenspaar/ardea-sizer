@@ -10,6 +10,7 @@ class FrozenModel(BaseModel):
 
 class Mission(FrozenModel):
     range: float
+    reserve: float
     cruise_speed: float
     stall_speed: float
     payload: float
