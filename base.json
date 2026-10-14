@@ -35,7 +35,8 @@
     "delta_c_l_flap": 0.50,
 
     "oswald_eff": 0.8,
-    "c_d_0": 0.022,
+    "c_d_0_wing": 0.008,
+    "f_fixed": 0.004,
     "wing_ar": 5.0,
     "wing_tr": 0.45
   }

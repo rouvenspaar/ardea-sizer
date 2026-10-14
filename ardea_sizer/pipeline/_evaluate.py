@@ -8,7 +8,7 @@ from ardea_sizer.physics import (
     get_range,
     get_required_power,
     get_total_mass,
-    get_c_l_max_3d, get_wing_area, get_c_d, get_c_l_cruise, get_drag_force, TimeSegment, FlightSegment, cruise_steps, get_isa_density
+    get_c_l_max_3d, get_wing_area, get_c_d, get_c_d_0, get_c_l_cruise, get_drag_force, TimeSegment, FlightSegment, cruise_steps, get_isa_density
 )
 from ardea_sizer.physics import get_dynamic_pressure
 from ardea_sizer._constants import FIELD_ALTITUDE
@@ -79,9 +79,11 @@ def evaluate_from_fuel_mass(base: Base, *, fuel_mass: ArrayLike) -> Plane:
     span = np.sqrt(a.wing_ar * wing_area)
     chord = wing_area / span
 
+    c_d_0 = get_c_d_0(c_d_0_wing=a.c_d_0_wing, f_fixed=a.f_fixed, wing_area=wing_area)
+
     c_l_cruise = get_c_l_cruise(mass=mass, wing_area=wing_area, q=q_cruise)
     c_d_cruise = get_c_d(
-        c_d_0=a.c_d_0,
+        c_d_0=c_d_0,
         c_l=c_l_cruise,
         oswald_eff=a.oswald_eff,
         aspect_ratio=a.wing_ar,
@@ -106,7 +108,7 @@ def evaluate_from_fuel_mass(base: Base, *, fuel_mass: ArrayLike) -> Plane:
     flight_range = get_range(
         segments,
         fuel_mass=fuel_mass, mtow=mass, wing_area=wing_area, aspect_ratio=a.wing_ar,
-        c_d_0=a.c_d_0, oswald_eff=a.oswald_eff, prop_eff=e.prop_eff,
+        c_d_0=c_d_0, oswald_eff=a.oswald_eff, prop_eff=e.prop_eff,
         sfc=e.fuel_cons, p_max=e.p_max * 1000,
     )
 
@@ -116,6 +118,7 @@ def evaluate_from_fuel_mass(base: Base, *, fuel_mass: ArrayLike) -> Plane:
         power_req=power_req,
         power_available=e.p_max,
         wing_area=wing_area,
+        c_d_0=c_d_0,
         taper=a.wing_tr,
         aspect_ratio=a.wing_ar,
     )

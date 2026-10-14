@@ -78,7 +78,8 @@ class Assumptions(FrozenModel):
     c_l_alpha_2d_cruise: float  # airfoil lift slope [1/deg]
     delta_c_l_flap: float
     oswald_eff: float
-    c_d_0: float
+    c_d_0_wing: float  # wing parasite drag, referenced to its own area
+    f_fixed: float  # drag area CD*S of everything except the wing (fuselage, tails) [m^2]
     wing_ar: float
     wing_tr: float
 

@@ -10,12 +10,12 @@ GEOM_SET = 1                  # "Shown"
 EXCLUDE = ["CG_Marker"]       # not part of the aircraft
 
 
-def optimize(plane: Plane) -> float:
-    """Return the parasite drag coefficient CD0 of the OpenVSP model with the sized wing.
+def optimize(plane: Plane) -> tuple[float, float]:
+    """Return (c_d_0_wing, f_fixed) of the OpenVSP model with the sized wing.
 
     Loads the .vsp3 file (unchanged on disk), sets the main wing's area, aspect ratio and taper,
     and runs the parasite drag build-up with the flow conditions saved in the file.
-    CD0 is referenced to the wing area, as c_d_0 in the sizer.
+    c_d_0_wing is the wing's CD on its own area; f_fixed the drag area CD*S of all other parts [m^2].
     """
     vsp.ClearVSPModel()
     vsp.ReadVSPFile(str(VSP3_FILE))
@@ -48,4 +48,8 @@ def optimize(plane: Plane) -> float:
     vsp.SetDoubleAnalysisInput(an, "Sref", [vsp.GetParmVal(wing_id, "TotalArea", "WingGeom")])
 
     rid = vsp.ExecAnalysis(an)
-    return float(vsp.GetDoubleResults(rid, "Total_CD_Total", 0)[0])
+    labels = list(vsp.GetStringResults(rid, "Comp_Label", 0))
+    i_wing = labels.index(WING_NAME)
+    c_d_0_wing = vsp.GetDoubleResults(rid, "Comp_CD", 0)[i_wing]  # Sref = wing area
+    f_fixed = vsp.GetDoubleResults(rid, "Total_f_Total", 0)[0] - vsp.GetDoubleResults(rid, "Comp_f", 0)[i_wing]
+    return float(c_d_0_wing), float(f_fixed)

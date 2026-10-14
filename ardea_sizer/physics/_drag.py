@@ -2,6 +2,15 @@ import numpy as np
 from numpy.typing import ArrayLike
 
 
+def get_c_d_0(
+    *,
+    c_d_0_wing: ArrayLike,
+    f_fixed: ArrayLike,
+    wing_area: ArrayLike,
+) -> ArrayLike:
+    # wing scales with its own area; fuselage & tails are a fixed drag area
+    return c_d_0_wing + f_fixed / wing_area
+
 def get_c_d(
     *,
     c_d_0: ArrayLike,

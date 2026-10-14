@@ -627,7 +627,7 @@
         </Negative_Volume_Props>
         <ParasiteDragProps>
           <ExpandedList Value="0.000000000000000000e+00" ID="JZAWZVSTASC"/>
-          <FFBodyEqnType Value="3.000000000000000000e+00" ID="DHXKSMCAUTH"/>
+          <FFBodyEqnType Value="1.000000000000000000e+00" ID="DHXKSMCAUTH"/>
           <FFUser Value="1.000000000000000000e+00" ID="JLVWSPAWTJX"/>
           <FFWingEqnType Value="3.000000000000000000e+00" ID="HFBDSZMXEJD"/>
           <IncorporatedGen Value="0.000000000000000000e+00" ID="OKSKYVZLYQN"/>
@@ -7721,10 +7721,10 @@
           <ExpandedList Value="0.000000000000000000e+00" ID="HEDDLWRDLLA"/>
           <FFBodyEqnType Value="3.000000000000000000e+00" ID="FFDIDOCXIZR"/>
           <FFUser Value="1.000000000000000000e+00" ID="SVLVMMUZOMQ"/>
-          <FFWingEqnType Value="3.000000000000000000e+00" ID="ZHFXRVRGHJP"/>
+          <FFWingEqnType Value="6.000000000000000000e+00" ID="ZHFXRVRGHJP"/>
           <IncorporatedGen Value="0.000000000000000000e+00" ID="VNFKXQCYIYP"/>
           <PercLam Value="0.000000000000000000e+00" ID="GBLFGBFCVCW"/>
-          <Q Value="1.000000000000000000e+00" ID="DYEKLZEPHFK"/>
+          <Q Value="1.050000000000000044e+00" ID="DYEKLZEPHFK"/>
           <Roughness Value="0.000000000000000000e+00" ID="FHSTRXQCNQZ"/>
           <TawTwRatio Value="1.000000000000000000e+00" ID="UBNLJBYEUWG"/>
           <TeTwRatio Value="1.000000000000000000e+00" ID="EFNOQMEHRXD"/>
@@ -8244,10 +8244,10 @@
           <ExpandedList Value="0.000000000000000000e+00" ID="OUKNNKPRWTU"/>
           <FFBodyEqnType Value="3.000000000000000000e+00" ID="OQOUJMVKVEM"/>
           <FFUser Value="1.000000000000000000e+00" ID="WEIRDTBQVXN"/>
-          <FFWingEqnType Value="3.000000000000000000e+00" ID="NUBVHBUKUBR"/>
+          <FFWingEqnType Value="6.000000000000000000e+00" ID="NUBVHBUKUBR"/>
           <IncorporatedGen Value="0.000000000000000000e+00" ID="FZKIROBWDQC"/>
           <PercLam Value="0.000000000000000000e+00" ID="DNUCAJWTHYR"/>
-          <Q Value="1.000000000000000000e+00" ID="WAPVDQKSPZC"/>
+          <Q Value="1.050000000000000044e+00" ID="WAPVDQKSPZC"/>
           <Roughness Value="0.000000000000000000e+00" ID="VOXWJAJMYGJ"/>
           <TawTwRatio Value="1.000000000000000000e+00" ID="TKTACQMWZKO"/>
           <TeTwRatio Value="1.000000000000000000e+00" ID="ERJRZEUDMEZ"/>
@@ -8767,7 +8767,7 @@
           <ExpandedList Value="1.000000000000000000e+00" ID="VWISAXODXJI"/>
           <FFBodyEqnType Value="3.000000000000000000e+00" ID="ARUUOJWWOGY"/>
           <FFUser Value="1.000000000000000000e+00" ID="QXGTTFNLOYP"/>
-          <FFWingEqnType Value="3.000000000000000000e+00" ID="DRFDFNGOVXU"/>
+          <FFWingEqnType Value="6.000000000000000000e+00" ID="DRFDFNGOVXU"/>
           <IncorporatedGen Value="0.000000000000000000e+00" ID="PZJTMKNMJVX"/>
           <PercLam Value="0.000000000000000000e+00" ID="ZPBGQQKMABR"/>
           <Q Value="1.000000000000000000e+00" ID="XVLLODVXSCS"/>
@@ -9652,7 +9652,7 @@
       <ID>RYWPXBWISP</ID>
       <Name>ParasiteDragSettings</Name>
       <ParasiteDrag>
-        <Alt Value="6.000000000000000000e+02" ID="LPGCTPWPEKB"/>
+        <Alt Value="5.600000000000000000e+02" ID="LPGCTPWPEKB"/>
         <AltLengthUnit Value="1.000000000000000000e+00" ID="HSLOGRUGLOM"/>
         <DeltaTemp Value="0.000000000000000000e+00" ID="NRYWWQJTXAE"/>
         <Density Value="1.155956305235644743e+00" ID="LOICPSIFMUE"/>
@@ -9675,14 +9675,24 @@
         <TempUnit Value="1.000000000000000000e+00" ID="AUOBFSDZPUC"/>
         <TurbCfEqnType Value="1.000000000000000000e+01" ID="RLRFJAZRONH"/>
         <UseModeMassFlag Value="0.000000000000000000e+00" ID="OIYHEVAKGLG"/>
-        <Vinf Value="8.300000000000000000e+01" ID="WSBRXQCRFQQ"/>
+        <Vinf Value="8.332999999999999829e+01" ID="WSBRXQCRFQQ"/>
         <VinfUnitType Value="1.000000000000000000e+00" ID="LWDLERCJGET"/>
       </ParasiteDrag>
     </ParmContainer>
     <ReferenceGeomID>EDBCZPKWRG</ReferenceGeomID>
     <ModeID/>
     <Excrescence>
-      <NumExcres>0</NumExcres>
+      <NumExcres>2</NumExcres>
+      <Excres_0>
+        <Label>Engine cooling + exhaust</Label>
+        <Type>4</Type>
+        <Input>8.999999999999999754e-04</Input>
+      </Excres_0>
+      <Excres_1>
+        <Label>Leakage and protuberances</Label>
+        <Type>2</Type>
+        <Input>1.000000000000000000e+01</Input>
+      </Excres_1>
     </Excrescence>
   </ParasiteDragMgr>
   <AeroStructMgr>
