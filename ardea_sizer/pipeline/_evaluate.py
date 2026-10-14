@@ -116,6 +116,6 @@ def evaluate_from_fuel_mass(base: Base, *, fuel_mass: ArrayLike) -> Plane:
         power_req=power_req,
         power_available=e.p_max,
         wing_area=wing_area,
-        span=span,
-        chord=chord,
+        taper=a.wing_tr,
+        aspect_ratio=a.wing_ar,
     )

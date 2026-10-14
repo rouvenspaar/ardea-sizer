@@ -8,5 +8,5 @@ class Plane:
     power_req: float
     power_available: float
     wing_area: float
-    span: float
-    chord: float
+    taper: float
+    aspect_ratio: float
