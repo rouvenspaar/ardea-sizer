@@ -8,7 +8,7 @@ from ardea_sizer.physics import (
     get_range,
     get_required_power,
     get_total_mass,
-    get_wing_area, get_c_d, get_c_l, get_drag_force, TimeSegment, FlightSegment, cruise_steps, get_isa_density
+    get_c_l_max_3d, get_wing_area, get_c_d, get_c_l_cruise, get_drag_force, TimeSegment, FlightSegment, cruise_steps, get_isa_density
 )
 from ardea_sizer.physics import get_dynamic_pressure
 from ardea_sizer._constants import FIELD_ALTITUDE
@@ -74,12 +74,12 @@ def evaluate_from_fuel_mass(base: Base, *, fuel_mass: ArrayLike) -> Plane:
     wing_area = get_wing_area(
         mass=mass,
         q_stall=q_stall,
-        c_l_max=a.c_l_max_3d + a.delta_c_l_flap
+        c_l_max=get_c_l_max_3d(c_l_max_2d=a.c_l_max_2d_takeoff) + a.delta_c_l_flap
     )
     span = np.sqrt(a.wing_ar * wing_area)
     chord = wing_area / span
 
-    c_l_cruise = get_c_l(mass=mass, wing_area=wing_area, q=q_cruise)
+    c_l_cruise = get_c_l_cruise(mass=mass, wing_area=wing_area, q=q_cruise)
     c_d_cruise = get_c_d(
         c_d_0=a.c_d_0,
         c_l=c_l_cruise,
@@ -111,6 +111,7 @@ def evaluate_from_fuel_mass(base: Base, *, fuel_mass: ArrayLike) -> Plane:
     )
 
     return Plane(
+        fuel_mass=fuel_mass,
         range=flight_range,
         power_req=power_req,
         power_available=e.p_max,

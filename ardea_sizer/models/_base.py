@@ -68,12 +68,14 @@ class Masses(FrozenModel):
 class Engine(FrozenModel):
     p_max: float
     fuel_cons: float
-    engine_eff: float = Field(gt=0, le=1)
     prop_eff: float = Field(gt=0, le=1)
 
 
 class Assumptions(FrozenModel):
-    c_l_max_3d: float
+    c_l_max_2d_takeoff: float  # airfoil, at take-off Re
+    c_l_max_2d_cruise: float  # airfoil, at cruise Re
+    alpha_0_l_cruise: float  # zero-lift AoA [deg]
+    c_l_alpha_2d_cruise: float  # airfoil lift slope [1/deg]
     delta_c_l_flap: float
     oswald_eff: float
     c_d_0: float

@@ -6,7 +6,7 @@ from numpy.typing import ArrayLike
 from ardea_sizer._constants import G, RHO_SL
 from ardea_sizer.physics._atmosphere import get_dynamic_pressure, get_isa_density
 from ardea_sizer.physics._drag import get_c_d, get_drag_force
-from ardea_sizer.physics._lift import get_c_l
+from ardea_sizer.physics._lift import get_c_l_cruise
 from ardea_sizer.physics._power import get_required_power
 
 J_PER_KWH = 3.6e6
@@ -129,7 +129,7 @@ def fly_mission(
         p_avail = p_max * rho / RHO_SL
 
         def power_at(m):
-            c_l = get_c_l(mass=m, wing_area=wing_area, q=q)
+            c_l = get_c_l_cruise(mass=m, wing_area=wing_area, q=q)
             c_d = get_c_d(c_d_0=c_d_0, c_l=c_l, oswald_eff=oswald_eff, aspect_ratio=aspect_ratio)
             drag = get_drag_force(q=q, c_d=c_d, wing_area=wing_area)
             thrust = np.maximum(drag + m * G * sin_g, 0.0)  # steep descent -> idle, no negative fuel
