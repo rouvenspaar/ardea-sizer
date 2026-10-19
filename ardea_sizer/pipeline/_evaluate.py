@@ -9,9 +9,11 @@ from ardea_sizer.physics import (
     get_range,
     get_required_power,
     get_total_mass,
-    get_c_l_max_3d, get_wing_area, get_c_d, get_c_d_0, get_c_l_cruise, get_drag_force, TimeSegment, FlightSegment, cruise_steps, get_isa_density
+    get_c_l_max_3d, get_wing_area, get_c_d, get_c_d_0, get_c_l_cruise, get_drag_force, TimeSegment, FlightSegment, cruise_steps, get_isa_density,
+    get_alpha_cruise, get_c_l_alpha_3d,
 )
 from ardea_sizer.physics import get_dynamic_pressure
+from ardea_sizer.physics._stability import get_x_ac_tail
 from ardea_sizer._constants import CRUISE_ALTITUDE, FIELD_ALTITUDE
 from ardea_sizer._constants import G
 
@@ -105,6 +107,14 @@ def evaluate_from_fuel_mass(base: Base, *, fuel_mass: ArrayLike) -> Plane:
         aspect_ratio=a.wing_ar,
     )
 
+    # wing incidence: fuselage at zero angle of attack in mid cruise (half the fuel burned)
+    c_l_mid_cruise = get_c_l_cruise(mass=mass - 0.5 * fuel_mass, wing_area=wing_area, q=q_cruise)
+    wing_ia = get_alpha_cruise(
+        c_l=c_l_mid_cruise,
+        c_l_alpha_3d=get_c_l_alpha_3d(c_l_alpha_2d=a.c_l_alpha_2d_cruise, aspect_ratio=a.wing_ar),
+        alpha_0_l=a.alpha_0_l_cruise,
+    )
+
     thrust_req = get_drag_force(q=q_cruise, c_d=c_d_cruise, wing_area=wing_area)
     power_req = get_required_power(
         thrust=thrust_req,
@@ -120,12 +130,13 @@ def evaluate_from_fuel_mass(base: Base, *, fuel_mass: ArrayLike) -> Plane:
     )
 
     t = base.tail
+    x_ac_tail = get_x_ac_tail(x_cg=masses.x_cg_full, tail_arm=t.arm_length)  # both stabilizers
     return Plane(
         masses=masses,
-        wing=Surface(area=wing_area, aspect_ratio=a.wing_ar, taper=a.wing_tr, x_le=a.wing_x, incidence=a.wing_ia),
+        wing=Surface(area=wing_area, aspect_ratio=a.wing_ar, taper=a.wing_tr, x_le=a.wing_x, incidence=wing_ia),
         wing_airfoil=a.wing_airfoil,
-        h_tail=Surface(area=t.h_area, aspect_ratio=t.h_ar, taper=t.h_tr, x_le=t.x, incidence=t.h_ia),
-        v_tail=Surface(area=t.v_area, aspect_ratio=t.v_ar, taper=t.v_tr, x_le=t.x),
+        h_tail=Surface(area=t.h_area, aspect_ratio=t.h_ar, taper=t.h_tr, x_le=0.0, incidence=t.h_ia).placed(x_ac=x_ac_tail),
+        v_tail=Surface(area=t.v_area, aspect_ratio=t.v_ar, taper=t.v_tr, x_le=0.0).placed(x_ac=x_ac_tail),
         c_d_0=c_d_0,
         range=flight_range,
         power_req=power_req,

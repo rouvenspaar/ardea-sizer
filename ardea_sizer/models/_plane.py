@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from ardea_sizer.physics import get_mac, get_root_chord, get_span
 from ._base import Masses
@@ -41,6 +41,10 @@ class Surface:
         """Aerodynamic centre (25 % MAC) from the nose [m]."""
         return self.x_le_mac + 0.25 * self.mac
 
+    def placed(self, *, x_ac: float) -> "Surface":
+        """Copy moved along x so that its aerodynamic centre is at x_ac [m]."""
+        return replace(self, x_le=self.x_le + x_ac - self.x_ac)
+
 
 @dataclass(frozen=True)
 class Plane:
@@ -74,8 +78,7 @@ class Plane:
     @property
     def x_cg(self) -> float:
         """Centre of gravity with full tank, from the nose [m]."""
-        m = self.masses
-        return (m.empty * m.x_cg + m.fuel.mass * m.fuel.x) / m.total
+        return self.masses.x_cg_full
 
     # shortcuts to the wing
     @property

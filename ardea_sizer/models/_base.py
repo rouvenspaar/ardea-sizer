@@ -64,6 +64,11 @@ class Masses(FrozenModel):
         """Centre of gravity [m]. The tank sits at the CG, so fuel doesn't move it."""
         return sum(p.mass * p.x for _, p in self.dry()) / self.empty
 
+    @property
+    def x_cg_full(self) -> float:
+        """Centre of gravity with full tank, from the nose [m]."""
+        return (self.empty * self.x_cg + self.fuel.mass * self.fuel.x) / self.total
+
 
 class Engine(FrozenModel):
     p_max: float
@@ -72,8 +77,7 @@ class Engine(FrozenModel):
 
 
 class Tail(FrozenModel):
-    arm_length: float  # tail arm [m]
-    x: float  # root leading edge of both stabilizers from the nose [m]
+    arm_length: float  # CG (full tank) -> aerodynamic centre (25 % MAC) of each stabilizer [m]
     h_area: float  # horizontal tail area [m^2]
     h_ar: float  # horizontal tail aspect ratio [-]
     h_tr: float  # horizontal tail taper ratio [-]
@@ -96,7 +100,6 @@ class Assumptions(FrozenModel):
     wing_ar: float
     wing_tr: float
     wing_x: float  # root leading edge from the nose [m]
-    wing_ia: float  # incidence [deg], positive leading edge up
     wing_airfoil: str  # NACA 4-digit code
 
 
