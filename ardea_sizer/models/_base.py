@@ -73,6 +73,7 @@ class Engine(FrozenModel):
 
 class Tail(FrozenModel):
     arm_length: float  # tail arm [m]
+    x: float  # root leading edge of both stabilizers from the nose [m]
     h_area: float  # horizontal tail area [m^2]
     h_ar: float  # horizontal tail aspect ratio [-]
     h_tr: float  # horizontal tail taper ratio [-]
@@ -80,6 +81,7 @@ class Tail(FrozenModel):
     v_area: float  # vertical tail area [m^2]
     v_ar: float  # vertical tail aspect ratio [-]
     v_tr: float  # vertical tail taper ratio [-]
+    downforce: float
 
 
 class Assumptions(FrozenModel):
@@ -93,6 +95,9 @@ class Assumptions(FrozenModel):
     f_fixed: float  # drag area CD*S of everything except the wing (fuselage, tails) [m^2]
     wing_ar: float
     wing_tr: float
+    wing_x: float  # root leading edge from the nose [m]
+    wing_ia: float  # incidence [deg], positive leading edge up
+    wing_airfoil: str  # NACA 4-digit code
 
 
 class Base(FrozenModel):

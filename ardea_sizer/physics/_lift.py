@@ -14,11 +14,11 @@ def get_c_l_max_3d(
 
 def get_wing_area(
     *,
-    mass: ArrayLike,
+    force: ArrayLike,
     q_stall: ArrayLike,
     c_l_max: ArrayLike,
 ) -> ArrayLike:
-    return (mass * G) / (q_stall * c_l_max)
+    return force / (q_stall * c_l_max)
 
 def get_c_l_cruise(
     *,

@@ -3,7 +3,7 @@
     "range": 1000000.0,
     "reserve": 50000.0,
     "cruise_speed": 83.33,
-    "stall_speed": 22.0
+    "stall_speed": 20.0
   },
   "masses": {
     "propeller":         { "x": 0.040, "mass": 0.35 },
@@ -29,13 +29,15 @@
   },
   "tail": {
     "arm_length": 1.6,
-    "h_area": 0.04,
+    "x": 1.5,
+    "h_area": 0.029,
     "h_ar": 5.0,
-    "h_tr": 0.45,
+    "h_tr": 0.7,
     "h_ia": -2.05,
-    "v_area": 0.04,
+    "v_area": 0.029,
     "v_ar": 5.0,
-    "v_tr": 0.45
+    "v_tr": 0.7,
+    "downforce": 4.7
   },
   "assumptions": {
     "c_l_max_2d_takeoff": 1.47,
@@ -48,6 +50,9 @@
     "c_d_0_wing": 0.008,
     "f_fixed": 0.004,
     "wing_ar": 5.0,
-    "wing_tr": 0.45
+    "wing_tr": 0.45,
+    "wing_x": 0.38,
+    "wing_ia": -2.01,
+    "wing_airfoil": "2412"
   }
 }

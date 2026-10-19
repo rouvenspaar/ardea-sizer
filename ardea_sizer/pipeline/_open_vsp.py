@@ -14,13 +14,6 @@ FUSELAGE_NAME = "ARDEA_D3_Stack"
 GEOM_SET = 1                  # "Shown"
 EXCLUDE = ["CG_Marker"]       # not part of the aircraft
 
-# Not in Plane yet: fixed at the values of the V3 model
-WING_X = 0.38               # root leading edge [m]
-WING_IA = -2.01                # [deg]
-WING_AIRFOIL = "2412"
-H_TAIL = dict(h_area=0.06, h_ar=4.0, h_tr=0.7, h_x=1.5, h_ia=0.0)
-V_TAIL = dict(v_area=0.03, v_ar=4.5, v_tr=0.7, v_x=1.5)
-
 # Interference factors Q, Raymer Table 12.6
 Q_VALUES = {
     FUSELAGE_NAME: 1.00,      # fuselage relative to other components
@@ -168,26 +161,33 @@ def _set_naca_4(geom_id: str, code: str) -> None:
 
 
 def optimize(plane: Plane) -> tuple[float, float]:
-    """Return (c_d_0_wing, f_fixed) of the OpenVSP model with the sized wing.
+    """Return (c_d_0_wing, f_fixed) of the OpenVSP model sized to the plane.
 
-    Loads the .vsp3 file (unchanged on disk), sets the interference factors Q_VALUES, sizes it
-    with size_model (wing area, aspect ratio and taper from the plane, everything else from the
-    constants above; saved to OUTPUT_FILE), and runs the parasite drag build-up with the flow
-    conditions saved in the file. No report files are kept.
+    Loads the .vsp3 file (unchanged on disk), sets the interference factors Q_VALUES, sizes wing
+    and stabilizers to the plane with size_model (saved to OUTPUT_FILE), and runs the parasite
+    drag build-up with the flow conditions saved in the file. No report files are kept.
     c_d_0_wing is the wing's CD on its own area; f_fixed the drag area CD*S of all other parts [m^2].
     """
+    w, h, v = plane.wing, plane.h_tail, plane.v_tail
     vsp.ClearVSPModel()
     vsp.ReadVSPFile(str(VSP3_FILE))
     set_q_values()
     size_model(
-        wing_area=plane.wing_area,
-        wing_ar=plane.aspect_ratio,
-        wing_tr=plane.taper,
-        wing_x=WING_X,
-        wing_ia=WING_IA,
-        wing_airfoil=WING_AIRFOIL,
-        **H_TAIL,
-        **V_TAIL,
+        wing_area=w.area,
+        wing_ar=w.aspect_ratio,
+        wing_tr=w.taper,
+        wing_x=w.x_le,
+        wing_ia=w.incidence,
+        wing_airfoil=plane.wing_airfoil,
+        h_area=h.area,
+        h_ar=h.aspect_ratio,
+        h_tr=h.taper,
+        h_x=h.x_le,
+        h_ia=h.incidence,
+        v_area=v.area,
+        v_ar=v.aspect_ratio,
+        v_tr=v.taper,
+        v_x=v.x_le,
     )
     wing_id = vsp.FindGeomsWithName(WING_NAME)[0]
 

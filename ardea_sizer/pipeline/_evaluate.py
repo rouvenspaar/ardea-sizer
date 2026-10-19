@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ardea_sizer.models import Base, Plane
+from ardea_sizer.models import Base, Plane, Surface
 from ardea_sizer.physics import (
     get_range,
     get_required_power,
@@ -12,6 +12,7 @@ from ardea_sizer.physics import (
 )
 from ardea_sizer.physics import get_dynamic_pressure
 from ardea_sizer._constants import FIELD_ALTITUDE
+from ardea_sizer._constants import G
 
 
 # claude function
@@ -69,10 +70,12 @@ def evaluate_from_fuel_mass(base: Base, *, fuel_mass: ArrayLike) -> Plane:
     q_cruise = get_dynamic_pressure(v=m.cruise_speed, rho=rho_cruise)
     q_stall = get_dynamic_pressure(v=m.stall_speed, rho=rho_takeoff)
 
-    mass = get_total_mass(fuel_mass=fuel_mass)
+    masses = base.with_(**{"masses.fuel.mass": float(fuel_mass)}).masses
+    mass = get_total_mass(empty_mass=masses.empty, fuel_mass=fuel_mass)
+    force = mass * G + base.tail.downforce
 
     wing_area = get_wing_area(
-        mass=mass,
+        force=force,
         q_stall=q_stall,
         c_l_max=get_c_l_max_3d(c_l_max_2d=a.c_l_max_2d_takeoff) + a.delta_c_l_flap
     )
@@ -112,13 +115,15 @@ def evaluate_from_fuel_mass(base: Base, *, fuel_mass: ArrayLike) -> Plane:
         sfc=e.fuel_cons, p_max=e.p_max * 1000,
     )
 
+    t = base.tail
     return Plane(
-        fuel_mass=fuel_mass,
+        masses=masses,
+        wing=Surface(area=wing_area, aspect_ratio=a.wing_ar, taper=a.wing_tr, x_le=a.wing_x, incidence=a.wing_ia),
+        wing_airfoil=a.wing_airfoil,
+        h_tail=Surface(area=t.h_area, aspect_ratio=t.h_ar, taper=t.h_tr, x_le=t.x, incidence=t.h_ia),
+        v_tail=Surface(area=t.v_area, aspect_ratio=t.v_ar, taper=t.v_tr, x_le=t.x),
+        c_d_0=c_d_0,
         range=flight_range,
         power_req=power_req,
         power_available=e.p_max,
-        wing_area=wing_area,
-        c_d_0=c_d_0,
-        taper=a.wing_tr,
-        aspect_ratio=a.wing_ar,
     )
