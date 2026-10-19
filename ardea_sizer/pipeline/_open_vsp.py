@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -168,6 +169,116 @@ def optimize(plane: Plane) -> tuple[float, float]:
     drag build-up with the flow conditions saved in the file. No report files are kept.
     c_d_0_wing is the wing's CD on its own area; f_fixed the drag area CD*S of all other parts [m^2].
     """
+    _load_sized(plane, out_file=OUTPUT_FILE)
+    rid = _parasite_drag()
+    labels = list(vsp.GetStringResults(rid, "Comp_Label", 0))
+    i_wing = labels.index(WING_NAME)
+    c_d_0_wing = vsp.GetDoubleResults(rid, "Comp_CD", 0)[i_wing]  # Sref = wing area
+    f_fixed = vsp.GetDoubleResults(rid, "Total_f_Total", 0)[0] - vsp.GetDoubleResults(rid, "Comp_f", 0)[i_wing]
+    return float(c_d_0_wing), float(f_fixed)
+
+
+@dataclass(frozen=True)
+class VspSurface:
+    """Planform of a wing geom as built in OpenVSP. Wing & H-tail: both halves; V-tail: the single fin."""
+    area: float  # [m^2]
+    span: float  # tip to tip, incl. the root offset of both halves [m]; height for the V-tail
+    root_offset: float  # spanwise offset of each root from the centreline [m]
+    root_chord: float  # [m]
+    tip_chord: float  # [m]
+    mean_chord: float  # area / panel span [m]
+    x: float  # root leading edge from the nose [m]
+    z: float  # root leading edge above the datum [m]
+    incidence: float  # [deg]
+
+
+@dataclass(frozen=True)
+class DragItem:
+    """One row of the parasite drag build-up; excrescences only have f and c_d."""
+    name: str
+    f: float  # drag area CD*S [m^2]
+    c_d: float  # referenced to VspModel.s_ref
+    s_wet: float = np.nan  # [m^2]
+    l_ref: float = np.nan  # reference length [m]
+    fineness: float = np.nan  # t/c for surfaces, l/d for bodies
+    form_factor: float = np.nan
+    re: float = np.nan
+    c_f: float = np.nan
+    q: float = np.nan  # interference factor
+
+
+@dataclass(frozen=True)
+class VspModel:
+    """Geometry and parasite drag of the OpenVSP model sized to a plane."""
+    wing: VspSurface
+    h_tail: VspSurface
+    v_tail: VspSurface
+    length: float  # overall [m]
+    width: float  # overall, tip to tip [m]
+    height: float  # overall [m]
+    fuselage_length: float  # [m]
+    fuselage_width: float  # [m]
+    fuselage_height: float  # [m]
+    altitude: float  # flow conditions of the drag build-up [m]
+    v_inf: float  # [m/s]
+    mach: float
+    s_ref: float  # [m^2]
+    drag: list[DragItem]  # components, then excrescences
+    f_total: float  # [m^2]
+    c_d_0: float  # referenced to s_ref
+
+
+def get_vsp_model(plane: Plane) -> VspModel:
+    """Size the OpenVSP model to the plane (saved to OUTPUT_FILE) and read back its geometry and drag build-up."""
+    _load_sized(plane, out_file=OUTPUT_FILE)
+    wing, h_tail, v_tail = (_read_surface(name) for name in (WING_NAME, H_TAIL_NAME, V_TAIL_NAME))
+
+    boxes = [_bbox(gid) for gid in vsp.FindGeoms() if vsp.GetGeomName(gid) not in EXCLUDE]
+    lo = np.min([b[0] for b in boxes], axis=0)
+    hi = np.max([b[1] for b in boxes], axis=0)
+    f_lo, f_hi = _bbox(vsp.FindGeomsWithName(FUSELAGE_NAME)[0])
+
+    rid = _parasite_drag()
+
+    def results(name: str) -> list[float]:
+        return list(vsp.GetDoubleResults(rid, name, 0))
+
+    s_ref = results("FC_Sref")[0]
+    drag = [
+        DragItem(name=name, f=f, c_d=c_d, s_wet=s_wet, l_ref=l_ref, fineness=fineness,
+                 form_factor=ff, re=re, c_f=c_f, q=q)
+        for name, f, c_d, s_wet, l_ref, fineness, ff, re, c_f, q in zip(
+            vsp.GetStringResults(rid, "Comp_Label", 0), results("Comp_f"), results("Comp_CD"),
+            results("Comp_Swet"), results("Comp_Lref"), results("Comp_FineRat"), results("Comp_FFOut"),
+            results("Comp_Re"), results("Comp_Cf"), results("Comp_Q"),
+        )
+    ]
+    if vsp.GetIntResults(rid, "Num_Excres", 0)[0]:
+        drag += [DragItem(name=name, f=f, c_d=f / s_ref)
+                 for name, f in zip(vsp.GetStringResults(rid, "Excres_Label", 0), results("Excres_f"))]
+
+    return VspModel(
+        wing=wing,
+        h_tail=h_tail,
+        v_tail=v_tail,
+        length=float(hi[0] - lo[0]),
+        width=float(2 * max(abs(lo[1]), abs(hi[1]))),  # mirrored geoms report one half only
+        height=float(hi[2] - lo[2]),
+        fuselage_length=float(f_hi[0] - f_lo[0]),
+        fuselage_width=float(f_hi[1] - f_lo[1]),
+        fuselage_height=float(f_hi[2] - f_lo[2]),
+        altitude=results("FC_Alt")[0],
+        v_inf=results("FC_Vinf")[0],
+        mach=results("FC_Mach")[0],
+        s_ref=s_ref,
+        drag=drag,
+        f_total=results("Total_f_Total")[0],
+        c_d_0=results("Total_CD_Total")[0],
+    )
+
+
+def _load_sized(plane: Plane, *, out_file: str | Path | None) -> None:
+    """Load the .vsp3 file (unchanged on disk), set Q_VALUES and size it to the plane."""
     w, h, v = plane.wing, plane.h_tail, plane.v_tail
     vsp.ClearVSPModel()
     vsp.ReadVSPFile(str(VSP3_FILE))
@@ -188,10 +299,17 @@ def optimize(plane: Plane) -> tuple[float, float]:
         v_ar=v.aspect_ratio,
         v_tr=v.taper,
         v_x=v.x_le,
+        out_file=out_file,
     )
+
+
+def _parasite_drag() -> str:
+    """Run the parasite drag build-up of the loaded model with the flow conditions saved in the file.
+
+    Applies analysis-only changes to the model, so call it after saving. Returns the results id.
+    """
     wing_id = vsp.FindGeomsWithName(WING_NAME)[0]
 
-    # Analysis-only changes, after saving
     for name in EXCLUDE:
         for gid in vsp.FindGeomsWithName(name):
             vsp.SetSetFlag(gid, GEOM_SET, False)
@@ -220,8 +338,30 @@ def optimize(plane: Plane) -> tuple[float, float]:
     # The build-up table is always written next to the model file; only the results are needed
     vsp_file = Path(vsp.GetVSPFileName())
     vsp_file.with_name(f"{vsp_file.stem}_ParasiteBuildUp.csv").unlink(missing_ok=True)
-    labels = list(vsp.GetStringResults(rid, "Comp_Label", 0))
-    i_wing = labels.index(WING_NAME)
-    c_d_0_wing = vsp.GetDoubleResults(rid, "Comp_CD", 0)[i_wing]  # Sref = wing area
-    f_fixed = vsp.GetDoubleResults(rid, "Total_f_Total", 0)[0] - vsp.GetDoubleResults(rid, "Comp_f", 0)[i_wing]
-    return float(c_d_0_wing), float(f_fixed)
+    return rid
+
+
+def _read_surface(name: str) -> VspSurface:
+    """Planform of the named wing geom of the loaded model."""
+    geom_id = vsp.FindGeomsWithName(name)[0]
+    n_sections = vsp.GetNumXSec(vsp.GetXSecSurf(geom_id, 0))
+    mirrored = bool(vsp.GetParmVal(geom_id, "Sym_Planar_Flag", "Sym"))
+    root_offset = vsp.GetParmVal(geom_id, "Y_Location", "XForm") if mirrored else 0.0
+    return VspSurface(
+        area=vsp.GetParmVal(geom_id, "TotalArea", "WingGeom"),
+        span=vsp.GetParmVal(geom_id, "TotalProjectedSpan", "WingGeom") + 2 * root_offset,
+        root_offset=root_offset,
+        root_chord=vsp.GetParmVal(geom_id, "Root_Chord", "XSec_1"),
+        tip_chord=vsp.GetParmVal(geom_id, "Tip_Chord", f"XSec_{n_sections - 1}"),
+        mean_chord=vsp.GetParmVal(geom_id, "TotalChord", "WingGeom"),
+        x=vsp.GetParmVal(geom_id, "X_Location", "XForm"),
+        z=vsp.GetParmVal(geom_id, "Z_Location", "XForm"),
+        incidence=vsp.GetParmVal(geom_id, "Y_Rotation", "XForm"),
+    )
+
+
+def _bbox(geom_id: str) -> tuple[np.ndarray, np.ndarray]:
+    """(min, max) corner of the geom's bounding box in absolute coordinates [m]."""
+    lo = vsp.GetGeomBBoxMin(geom_id, 0, True)
+    hi = vsp.GetGeomBBoxMax(geom_id, 0, True)
+    return np.array([lo.x(), lo.y(), lo.z()]), np.array([hi.x(), hi.y(), hi.z()])
