@@ -14,6 +14,8 @@ V_TAIL_NAME = "vertical stabilizer"
 FUSELAGE_NAME = "ARDEA_D3_Stack"
 GEOM_SET = 1                  # "Shown"
 EXCLUDE = ["CG_Marker"]       # not part of the aircraft
+BOOM_XSEC = -2                # fuselage cross-section closing the tail boom (the last one is the end cap)
+BOOM_OVERHANG = 0.02          # boom end behind the trailing edge of the tails [m], as in the original model
 
 # Interference factors Q, Raymer Table 12.6
 Q_VALUES = {
@@ -63,6 +65,7 @@ def size_model(
     wing_y is the spanwise offset of each wing root from the centreline; None puts the roots on the
     fuselage sides, so the whole wing area is outside the fuselage.
     wing_airfoil is a NACA 4-digit code (e.g. "2412"), used at root and tip.
+    The fuselage tail boom is stretched to end just behind the stabilizers (_fit_boom).
     The sized model is saved to out_file (None: not saved); the file it was loaded from is not touched.
     """
     wing_id = _size_surface(WING_NAME, area=wing_area, ar=wing_ar, tr=wing_tr, x=wing_x, z=wing_z, ia=wing_ia)
@@ -71,9 +74,12 @@ def size_model(
     if wing_y is None:
         wing_y = _fuselage_half_width(wing_id, wing_airfoil)
     vsp.SetParmVal(wing_id, "Y_Rel_Location", "XForm", float(wing_y))
-    _size_surface(H_TAIL_NAME, area=h_area, ar=h_ar, tr=h_tr, x=h_x, z=h_z, ia=h_ia)
-    _size_surface(V_TAIL_NAME, area=v_area, ar=v_ar, tr=v_tr, x=v_x, z=v_z)
+    tail_ids = [
+        _size_surface(H_TAIL_NAME, area=h_area, ar=h_ar, tr=h_tr, x=h_x, z=h_z, ia=h_ia),
+        _size_surface(V_TAIL_NAME, area=v_area, ar=v_ar, tr=v_tr, x=v_x, z=v_z),
+    ]
     vsp.Update()
+    _fit_boom(tail_ids)
     if out_file is not None:
         vsp.WriteVSPFile(str(out_file))
 
@@ -105,6 +111,28 @@ def _size_surface(
     if ia is not None:
         vsp.SetParmVal(geom_id, "Y_Rel_Rotation", "XForm", float(ia))
     return geom_id
+
+
+def _fit_boom(tail_ids: list[str]) -> None:
+    """Stretch or shorten the tail boom so it ends BOOM_OVERHANG behind the rearmost tail root trailing edge.
+
+    Only the constant-diameter boom section changes; the fuselage ahead of it and the end cap keep their shape.
+    """
+    fuselage_id = vsp.FindGeomsWithName(FUSELAGE_NAME)[0]
+    surf_id = vsp.GetXSecSurf(fuselage_id, 0)
+    i_boom = vsp.GetNumXSec(surf_id) + BOOM_XSEC
+    boom_start = vsp.GetParmVal(fuselage_id, "X_Location", "XForm") + sum(
+        vsp.GetParmVal(vsp.GetXSecParm(vsp.GetXSec(surf_id, i), "XDelta")) for i in range(i_boom)
+    )
+    tail_end = max(
+        vsp.GetParmVal(gid, "X_Location", "XForm") + vsp.GetParmVal(gid, "Root_Chord", "XSec_1")
+        for gid in tail_ids
+    )
+    boom_length = tail_end + BOOM_OVERHANG - boom_start
+    if boom_length <= 0:
+        raise ValueError(f"Tails end at x = {tail_end:.3f} m, ahead of the tail boom (starts at {boom_start:.3f} m).")
+    vsp.SetParmVal(vsp.GetXSecParm(vsp.GetXSec(surf_id, i_boom), "XDelta"), float(boom_length))
+    vsp.Update()
 
 
 def _fuselage_half_width(wing_id: str, airfoil: str, overlap: float = 0.001) -> float:
