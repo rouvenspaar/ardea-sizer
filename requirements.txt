@@ -2,7 +2,6 @@
 numpy>=2.1
 pydantic>=2.8
 
-# notebook.ipynb
 ipykernel
 
 # OpenVSP is not on PyPI. Download the win64 zip matching your Python version

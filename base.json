@@ -27,6 +27,16 @@
     "fuel_cons": 0.45,
     "prop_eff": 0.75
   },
+  "tail": {
+    "arm_length": 1.6,
+    "h_area": 0.04,
+    "h_ar": 5.0,
+    "h_tr": 0.45,
+    "h_ia": -2.05,
+    "v_area": 0.04,
+    "v_ar": 5.0,
+    "v_tr": 0.45
+  },
   "assumptions": {
     "c_l_max_2d_takeoff": 1.47,
     "c_l_max_2d_cruise": 1.594,

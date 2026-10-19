@@ -71,6 +71,17 @@ class Engine(FrozenModel):
     prop_eff: float = Field(gt=0, le=1)
 
 
+class Tail(FrozenModel):
+    arm_length: float  # tail arm [m]
+    h_area: float  # horizontal tail area [m^2]
+    h_ar: float  # horizontal tail aspect ratio [-]
+    h_tr: float  # horizontal tail taper ratio [-]
+    h_ia: float  # horizontal tail incidence angle [deg]
+    v_area: float  # vertical tail area [m^2]
+    v_ar: float  # vertical tail aspect ratio [-]
+    v_tr: float  # vertical tail taper ratio [-]
+
+
 class Assumptions(FrozenModel):
     c_l_max_2d_takeoff: float  # airfoil, at take-off Re
     c_l_max_2d_cruise: float  # airfoil, at cruise Re
@@ -88,6 +99,7 @@ class Base(FrozenModel):
     mission: Mission
     masses: Masses
     engine: Engine
+    tail: Tail
     assumptions: Assumptions
 
     @classmethod
