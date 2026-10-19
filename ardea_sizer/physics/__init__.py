@@ -1,5 +1,5 @@
 from ._atmosphere import get_dynamic_pressure, get_isa_density
-from ._lift import get_c_l_max_3d, get_wing_area, get_c_l_cruise, get_c_l_alpha_3d, get_alpha_cruise
+from ._lift import get_c_l_max_3d, get_c_l_max_flapped, get_wing_area, get_c_l_cruise, get_c_l_alpha_3d, get_alpha_cruise
 from ._drag import get_c_d, get_c_d_0, get_drag_force
 from ._geometry import get_span, get_root_chord, get_mac
 from ._mass import get_total_mass
@@ -12,6 +12,7 @@ __all__ = [
     "get_required_power",
     "get_range",
     "get_c_l_max_3d",
+    "get_c_l_max_flapped",
     "get_c_l_cruise",
     "get_c_l_alpha_3d",
     "get_alpha_cruise",

@@ -14,8 +14,10 @@ def run_pipeline(
 ) -> tuple[Plane, Base]:
     """Size the plane and feed the OpenVSP parasite drag back until it settles.
 
-    Starts from c_d_0_wing and f_fixed in `base`: evaluate -> OpenVSP drag of that plane ->
-    evaluate again with it ... until the plane's CD0 changes by less than `abs_tol`.
+    Starts from f_fixed in `base`: evaluate -> OpenVSP drag of that plane -> evaluate again with it ...
+    until the plane's CD0 changes by less than `abs_tol`. Only f_fixed (fuselage, tails, excrescences)
+    comes from OpenVSP; the wing keeps its XFOIL-based c_d_0_wing, because the build-up treats it as
+    fully turbulent.
     By default the fuel is sized for the mission (`evaluate`); with `fuel_mass` it is fixed
     and the range follows (`evaluate_from_fuel_mass`).
     Returns the converged plane and the base holding the drag values it was sized with.
@@ -25,10 +27,11 @@ def run_pipeline(
             plane = evaluate(base)
         else:
             plane = evaluate_from_fuel_mass(base, fuel_mass=fuel_mass)
-        c_d_0_wing, f_fixed = optimize(plane)
+        _, f_fixed = optimize(plane)  # OpenVSP's turbulent wing drag is not used
+        c_d_0_wing = base.assumptions.c_d_0_wing
         c_d_0_new = get_c_d_0(c_d_0_wing=c_d_0_wing, f_fixed=f_fixed, wing_area=plane.wing_area)
         if verbose:
-            print(f"Run {count}: c_d_0_wing {base.assumptions.c_d_0_wing:.5f} -> {c_d_0_wing:.5f}   "
+            print(f"Run {count}: c_d_0_wing {c_d_0_wing:.5f} (XFOIL)   "
                   f"f_fixed {base.assumptions.f_fixed:.5f} -> {f_fixed:.5f} m^2   "
                   f"CD0 {float(plane.c_d_0):.5f} -> {float(c_d_0_new):.5f}   "
                   f"S {float(plane.wing_area):.4f} m^2   fuel {float(plane.fuel_mass):.3f} kg")
@@ -36,6 +39,6 @@ def run_pipeline(
         if abs(c_d_0_new - plane.c_d_0) <= abs_tol:
             return plane, base
 
-        base = base.with_(**{"assumptions.c_d_0_wing": c_d_0_wing, "assumptions.f_fixed": f_fixed})
+        base = base.with_(**{"assumptions.f_fixed": f_fixed})
 
     raise RuntimeError(f"CD0 did not converge in {max_iter} runs (last change {abs(c_d_0_new - plane.c_d_0):.2g}).")

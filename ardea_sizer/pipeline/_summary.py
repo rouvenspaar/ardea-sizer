@@ -11,6 +11,7 @@ from ardea_sizer.physics import (
     get_c_l_alpha_3d,
     get_c_l_cruise,
     get_c_l_max_3d,
+    get_c_l_max_flapped,
     get_dynamic_pressure,
     get_isa_density,
 )
@@ -122,7 +123,13 @@ def summary(plane: Plane, base: Base) -> str:
             label = f"{d.name[:55]:<56}"
         lines.append(f"  {label}{d.f:>9.5f}{d.c_d:>8.5f}{100 * d.f / vsp_model.f_total:>6.1f}")
     lines.append("  " + "-" * (WIDTH - 2))
-    lines.append(f"  {'Total':<56}{vsp_model.f_total:>9.5f}{vsp_model.c_d_0:>8.5f}{100:>6.1f}")
+    lines.append(f"  {'Total (OpenVSP)':<56}{vsp_model.f_total:>9.5f}{vsp_model.c_d_0:>8.5f}{100:>6.1f}")
+    lines.append("")
+    lines.append("  OpenVSP treats the wing as fully turbulent; the sizing uses the XFOIL wing instead:")
+    wing_label = f"Wing, XFOIL c_d {a.c_d_wing_section:.4f} x {a.c_d_wing_factor:.2f}"
+    lines.append(f"  {wing_label:<56}{a.c_d_0_wing * s:>9.5f}{a.c_d_0_wing:>8.5f}")
+    lines.append(f"  {'Everything else (OpenVSP, f_fixed)':<56}{a.f_fixed:>9.5f}{a.f_fixed / s:>8.5f}")
+    lines.append(f"  {'Total used in sizing':<56}{c_d_0 * s:>9.5f}{c_d_0:>8.5f}")
 
     # ------------------------------------------------------------------ aerodynamics
     section("Aerodynamics (cruise, MTOW)")
@@ -132,7 +139,9 @@ def summary(plane: Plane, base: Base) -> str:
     c_l_alpha = float(get_c_l_alpha_3d(c_l_alpha_2d=a.c_l_alpha_2d_cruise, aspect_ratio=wing.aspect_ratio))
     alpha = float(get_alpha_cruise(c_l=c_l, c_l_alpha_3d=c_l_alpha, alpha_0_l=a.alpha_0_l_cruise))
     c_l_max_clean = float(get_c_l_max_3d(c_l_max_2d=a.c_l_max_2d_cruise))
-    c_l_max_flap = float(get_c_l_max_3d(c_l_max_2d=a.c_l_max_2d_takeoff)) + a.delta_c_l_flap
+    c_l_max_flap = float(get_c_l_max_flapped(
+        c_l_max_2d=a.c_l_max_2d_takeoff, delta_c_l_flap=a.delta_c_l_flap, flap_area_fraction=a.flap_area_fraction,
+    ))
     v_stall_clean = np.sqrt(2 * weight / (rho_cruise * s * c_l_max_clean))
     # best L/D of the parabolic polar: CL = sqrt(CD0 * pi * e * AR)
     c_l_best = np.sqrt(c_d_0 * np.pi * a.oswald_eff * wing.aspect_ratio)
@@ -142,7 +151,7 @@ def summary(plane: Plane, base: Base) -> str:
     row("Dynamic pressure", q_cruise, "Pa", ".1f")
     row("CL", c_l, "-", ".4f")
     row("CD0 (whole plane, ref. wing)", c_d_0, "-", ".5f")
-    row("  CD0 wing", a.c_d_0_wing, "-", ".5f")
+    row("  CD0 wing (XFOIL x factor)", a.c_d_0_wing, "-", ".5f")
     row("  CD0 fixed (f / S)", a.f_fixed / s, f"-   (f = {a.f_fixed:.5f} m^2)", ".5f")
     row("CDi", c_d_i, f"-   ({100 * c_d_i / c_d:.0f} % of CD)", ".5f")
     row("CD", c_d, "-", ".5f")

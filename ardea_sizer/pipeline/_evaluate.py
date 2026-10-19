@@ -10,7 +10,7 @@ from ardea_sizer.physics import (
     get_required_power,
     get_total_mass,
     get_c_l_max_3d, get_wing_area, get_c_d, get_c_d_0, get_c_l_cruise, get_drag_force, TimeSegment, FlightSegment, cruise_steps, get_isa_density,
-    get_alpha_cruise, get_c_l_alpha_3d,
+    get_alpha_cruise, get_c_l_alpha_3d, get_c_l_max_flapped,
 )
 from ardea_sizer.physics import get_dynamic_pressure
 from ardea_sizer.physics._stability import get_x_ac_tail
@@ -92,7 +92,9 @@ def evaluate_from_fuel_mass(base: Base, *, fuel_mass: ArrayLike) -> Plane:
     wing_area = get_wing_area(
         force=force,
         q_stall=q_stall,
-        c_l_max=get_c_l_max_3d(c_l_max_2d=a.c_l_max_2d_takeoff) + a.flap_area_fraction * get_c_l_max_3d(c_l_max_2d=a.delta_c_l_flap, factor=0.92)
+        c_l_max=get_c_l_max_flapped(
+            c_l_max_2d=a.c_l_max_2d_takeoff, delta_c_l_flap=a.delta_c_l_flap, flap_area_fraction=a.flap_area_fraction,
+        ),
     )
     span = np.sqrt(a.wing_ar * wing_area)
     chord = wing_area / span
