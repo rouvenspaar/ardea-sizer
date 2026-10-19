@@ -7,7 +7,7 @@ from ardea_sizer._constants import G
 def get_c_l_max_3d(
     *,
     c_l_max_2d: ArrayLike,
-    factor: ArrayLike = 0.9,
+    factor: ArrayLike = 0.875,
 ) -> ArrayLike:
     # wing C_L,max from airfoil c_l,max; Raymer: ~0.9 for unswept, moderate-to-high AR
     return factor * c_l_max_2d
