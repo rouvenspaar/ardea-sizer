@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import numpy as np
 import openvsp as vsp
 
 from ardea_sizer.models import Plane
@@ -14,10 +15,10 @@ GEOM_SET = 1                  # "Shown"
 EXCLUDE = ["CG_Marker"]       # not part of the aircraft
 
 # Not in Plane yet: fixed at the values of the V3 model
-WING_X = 0.445                # root leading edge [m]
-WING_IA = 0.7                 # [deg]
+WING_X = 0.38               # root leading edge [m]
+WING_IA = -2.01                # [deg]
 WING_AIRFOIL = "2412"
-H_TAIL = dict(h_area=0.06, h_ar=2.0, h_tr=0.7, h_x=1.5, h_ia=0.0)
+H_TAIL = dict(h_area=0.06, h_ar=4.0, h_tr=0.7, h_x=1.5, h_ia=0.0)
 V_TAIL = dict(v_area=0.03, v_ar=4.5, v_tr=0.7, v_x=1.5)
 
 # Interference factors Q, Raymer Table 12.6
@@ -54,6 +55,7 @@ def size_model(
     v_ar: float,
     v_tr: float,
     v_x: float,
+    wing_y: float | None = None,
     wing_z: float | None = None,
     h_z: float | None = None,
     v_z: float | None = None,
@@ -64,11 +66,17 @@ def size_model(
     Areas and aspect ratios are for the whole surface (both halves of the wing and the H-tail,
     the single fin of the V-tail). Positions are the root leading edge from the nose [m];
     a z left at None keeps the value in the file. Incidences are in degrees, positive leading edge up.
+    wing_y is the spanwise offset of each wing root from the centreline; None puts the roots on the
+    fuselage sides, so the whole wing area is outside the fuselage.
     wing_airfoil is a NACA 4-digit code (e.g. "2412"), used at root and tip.
     The sized model is saved to out_file (None: not saved); the file it was loaded from is not touched.
     """
     wing_id = _size_surface(WING_NAME, area=wing_area, ar=wing_ar, tr=wing_tr, x=wing_x, z=wing_z, ia=wing_ia)
     _set_naca_4(wing_id, wing_airfoil)
+    vsp.Update()  # root chord and position for the fuselage width below
+    if wing_y is None:
+        wing_y = _fuselage_half_width(wing_id, wing_airfoil)
+    vsp.SetParmVal(wing_id, "Y_Rel_Location", "XForm", float(wing_y))
     _size_surface(H_TAIL_NAME, area=h_area, ar=h_ar, tr=h_tr, x=h_x, z=h_z, ia=h_ia)
     _size_surface(V_TAIL_NAME, area=v_area, ar=v_ar, tr=v_tr, x=v_x, z=v_z)
     vsp.Update()
@@ -105,11 +113,48 @@ def _size_surface(
     return geom_id
 
 
-def _set_naca_4(geom_id: str, code: str) -> None:
-    """Give every cross-section of a wing geom the same NACA 4-digit airfoil."""
+def _fuselage_half_width(wing_id: str, airfoil: str, overlap: float = 0.001) -> float:
+    """Spanwise root offset that keeps the whole root airfoil inside the fuselage [m].
+
+    The fuselage half-width at every point of the root airfoil outline (upper and lower surface,
+    with incidence), measured on the fuselage surface; the smallest one minus a small overlap.
+    """
+    x_le = vsp.GetParmVal(wing_id, "X_Location", "XForm")
+    z_le = vsp.GetParmVal(wing_id, "Z_Location", "XForm")
+    chord = vsp.GetParmVal(wing_id, "Root_Chord", "XSec_1")
+    ia = np.radians(vsp.GetParmVal(wing_id, "Y_Rotation", "XForm"))
+
+    xc, zc = _naca_4_outline(airfoil)
+    x = x_le + chord * (xc * np.cos(ia) + zc * np.sin(ia))
+    z = z_le + chord * (zc * np.cos(ia) - xc * np.sin(ia))  # positive incidence: trailing edge down
+
+    fuselage_id = vsp.FindGeomsWithName(FUSELAGE_NAME)[0]
+    half_widths = [vsp.AxisProjPnt01(fuselage_id, 0, vsp.Y_DIR, vsp.vec3d(xi, 0.0, zi))[0] for xi, zi in zip(x, z)]
+    return float(min(half_widths)) - overlap
+
+
+def _naca_4(code: str) -> tuple[float, float, float]:
+    """(max camber, camber position, thickness) of a NACA 4-digit code, as chord fractions."""
     if len(code) != 4 or not code.isdigit():
         raise ValueError(f"Not a NACA 4-digit code: {code!r}")
-    camber, camber_loc, thickness = int(code[0]) / 100, int(code[1]) / 10, int(code[2:]) / 100
+    return int(code[0]) / 100, int(code[1]) / 10, int(code[2:]) / 100
+
+
+def _naca_4_outline(code: str, n: int = 40) -> tuple[np.ndarray, np.ndarray]:
+    """Upper and lower surface points (x, z) of a NACA 4-digit airfoil with unit chord, sharp trailing edge."""
+    m, p, t = _naca_4(code)
+    xc = (1 - np.cos(np.linspace(0, np.pi, n))) / 2  # clustered at the edges
+    yt = 5 * t * (0.2969 * np.sqrt(xc) - 0.1260 * xc - 0.3516 * xc**2 + 0.2843 * xc**3 - 0.1036 * xc**4)
+    if m > 0:
+        yc = np.where(xc < p, m / p**2 * (2 * p * xc - xc**2), m / (1 - p) ** 2 * (1 - 2 * p + 2 * p * xc - xc**2))
+    else:
+        yc = np.zeros_like(xc)
+    return np.concatenate([xc, xc]), np.concatenate([yc + yt, yc - yt])
+
+
+def _set_naca_4(geom_id: str, code: str) -> None:
+    """Give every cross-section of a wing geom the same NACA 4-digit airfoil."""
+    camber, camber_loc, thickness = _naca_4(code)
 
     surf_id = vsp.GetXSecSurf(geom_id, 0)
     for i in range(vsp.GetNumXSec(surf_id)):
