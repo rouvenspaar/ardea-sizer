@@ -128,7 +128,7 @@ def summary(plane: Plane, base: Base) -> str:
     lines.append("  OpenVSP treats the wing as fully turbulent; the sizing uses the XFOIL wing instead:")
     wing_label = f"Wing, XFOIL c_d {a.c_d_wing_section:.4f} x {a.c_d_wing_factor:.2f}"
     lines.append(f"  {wing_label:<56}{a.c_d_0_wing * s:>9.5f}{a.c_d_0_wing:>8.5f}")
-    lines.append(f"  {'Everything else (OpenVSP, f_fixed)':<56}{a.f_fixed:>9.5f}{a.f_fixed / s:>8.5f}")
+    lines.append(f"  {'Everything else (OpenVSP f_fixed, % excres. w/o wing)':<56}{a.f_fixed:>9.5f}{a.f_fixed / s:>8.5f}")
     lines.append(f"  {'Total used in sizing':<56}{c_d_0 * s:>9.5f}{c_d_0:>8.5f}")
 
     # ------------------------------------------------------------------ aerodynamics

@@ -16,12 +16,13 @@ GEOM_SET = 1                  # "Shown"
 EXCLUDE = ["CG_Marker"]       # not part of the aircraft
 BOOM_XSEC = -2                # fuselage cross-section closing the tail boom (the last one is the end cap)
 BOOM_OVERHANG = 0.02          # boom end behind the trailing edge of the tails [m], as in the original model
+EXCRES_PERCENT_GEOM = "% of CD_Geom"  # Excres_Type of an excrescence given as a percentage of the geometry drag
 
 # Interference factors Q, Raymer Table 12.6
 Q_VALUES = {
     FUSELAGE_NAME: 1.00,      # fuselage relative to other components
     WING_NAME: 1.05,          # high, mid or well-filleted low wing
-    H_TAIL_NAME: 0.8,        # conventional tail group
+    H_TAIL_NAME: 1.05,        # conventional tail group
     V_TAIL_NAME: 1.05,        # conventional tail group
 }
 
@@ -196,14 +197,30 @@ def optimize(plane: Plane) -> tuple[float, float]:
     and stabilizers to the plane with size_model (saved to OUTPUT_FILE), and runs the parasite
     drag build-up with the flow conditions saved in the file. No report files are kept.
     c_d_0_wing is the wing's CD on its own area; f_fixed the drag area CD*S of all other parts [m^2].
+    Excrescences given as a % of the geometry drag are taken on the other parts only: the sizing wing
+    drag (c_d_wing_factor) already covers the wing's own gaps and interference.
     """
     _load_sized(plane, out_file=OUTPUT_FILE)
     rid = _parasite_drag()
     labels = list(vsp.GetStringResults(rid, "Comp_Label", 0))
     i_wing = labels.index(WING_NAME)
     c_d_0_wing = vsp.GetDoubleResults(rid, "Comp_CD", 0)[i_wing]  # Sref = wing area
-    f_fixed = vsp.GetDoubleResults(rid, "Total_f_Total", 0)[0] - vsp.GetDoubleResults(rid, "Comp_f", 0)[i_wing]
-    return float(c_d_0_wing), float(f_fixed)
+    comp_f = list(vsp.GetDoubleResults(rid, "Comp_f", 0))
+    f_other = sum(comp_f) - comp_f[i_wing]
+
+    f_excres = 0.0
+    for kind, value, f in zip(
+        vsp.GetStringResults(rid, "Excres_Type", 0),
+        vsp.GetDoubleResults(rid, "Excres_Input", 0),
+        vsp.GetDoubleResults(rid, "Excres_f", 0),
+    ):
+        if kind == EXCRES_PERCENT_GEOM:
+            f_excres += value / 100 * f_other
+        elif "margin" in kind.lower():  # % of the total incl. the turbulent wing: no wing-free equivalent
+            raise ValueError(f"Excrescence type {kind!r} is not supported; use '{EXCRES_PERCENT_GEOM}' instead.")
+        else:  # drag area, CD or count: independent of the wing
+            f_excres += f
+    return float(c_d_0_wing), float(f_other + f_excres)
 
 
 @dataclass(frozen=True)
