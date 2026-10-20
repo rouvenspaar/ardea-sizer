@@ -21,7 +21,7 @@ BOOM_OVERHANG = 0.02          # boom end behind the trailing edge of the tails [
 Q_VALUES = {
     FUSELAGE_NAME: 1.00,      # fuselage relative to other components
     WING_NAME: 1.05,          # high, mid or well-filleted low wing
-    H_TAIL_NAME: 1.05,        # conventional tail group
+    H_TAIL_NAME: 0.8,        # conventional tail group
     V_TAIL_NAME: 1.05,        # conventional tail group
 }
 

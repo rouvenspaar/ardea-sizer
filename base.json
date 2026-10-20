@@ -18,32 +18,32 @@
     "flight_controller": { "x": 0.803, "mass": 0.25 },
     "electronics":       { "x": 0.803, "mass": 0.60 },
     "battery":           { "x": 0.803, "mass": 0.50 },
-    "fuselage":          { "x": 0.612, "mass": 3.00 },
+    "fuselage":          { "x": 0.612, "mass": 2.5 },
     "tail":              { "x": 1.252, "mass": 0.40 },
-    "wing":              { "x": 0.489, "mass": 3.00 }
+    "wing":              { "x": 0.489, "mass": 2.5 }
   },
   "engine": {
     "p_max": 4.97,
-    "fuel_cons": 0.45,
+    "fuel_cons": 0.44,
     "prop_eff": 0.75
   },
   "tail": {
     "arm_length": 1.6,
-    "h_area": 0.029,
-    "h_ar": 5.0,
-    "h_tr": 0.7,
-    "h_ia": -2.05,
-    "v_area": 0.0145,
-    "v_ar": 5.0,
-    "v_tr": 0.7,
-    "downforce": 4.7
+    "h_area": 0.08109,
+    "h_ar": 4.5,
+    "h_tr": 0.8,
+    "h_ia": -0.1675,
+    "v_area": 0.0304,
+    "v_ar": 3.0,
+    "v_tr": 1,
+    "downforce": 9.5
   },
   "assumptions": {
-    "c_l_max_2d_takeoff": 1.47,
-    "c_l_max_2d_cruise": 1.594,
-    "alpha_0_l_cruise": -2.16,
-    "c_l_alpha_2d_cruise": 0.1107,
-    "delta_c_l_flap": 0.41,
+    "c_l_max_2d_takeoff": 1.33,
+    "c_l_max_2d_cruise": 1.33,
+    "alpha_0_l_cruise": -1.88,
+    "c_l_alpha_2d_cruise": 0.122,
+    "delta_c_l_flap": 0.43,
     "flap_area_fraction": 0.609,
 
     "oswald_eff": 0.8,
@@ -52,9 +52,9 @@
     "c_d_wing_factor": 1.4,
 
     "f_fixed": 0.004,
-    "wing_ar": 5.0,
+    "wing_ar": 8.0,
     "wing_tr": 0.45,
-    "wing_x": 0.38,
+    "wing_x": 0.39,
     "wing_airfoil": "2412"
   }
 }
