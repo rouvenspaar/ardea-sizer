@@ -35,6 +35,14 @@ def set_q_values(q_values: dict[str, float] = Q_VALUES) -> None:
     vsp.Update()
 
 
+def set_perc_lam(perc_lam: dict[str, float]) -> None:
+    """Set the laminar flow percentage of each named component of the loaded model; others keep the file's."""
+    for name, value in perc_lam.items():
+        geom_id = vsp.FindGeomsWithName(name)[0]
+        vsp.SetParmVal(geom_id, "PercLam", "ParasiteDragProps", value)
+    vsp.Update()
+
+
 def size_model(
     *,
     wing_area: float,
@@ -193,34 +201,35 @@ def _set_naca_4(geom_id: str, code: str) -> None:
 def optimize(plane: Plane) -> tuple[float, float]:
     """Return (c_d_0_wing, f_fixed) of the OpenVSP model sized to the plane.
 
-    Loads the .vsp3 file (unchanged on disk), sets the interference factors Q_VALUES, sizes wing
-    and stabilizers to the plane with size_model (saved to OUTPUT_FILE), and runs the parasite
-    drag build-up with the flow conditions saved in the file. No report files are kept.
+    Loads the .vsp3 file (unchanged on disk), sets Q_VALUES and plane.wing_perc_lam, sizes wing and stabilizers
+    to the plane with size_model (saved to OUTPUT_FILE), and runs the parasite drag build-up with the
+    flow conditions saved in the file. No report files are kept.
     c_d_0_wing is the wing's CD on its own area; f_fixed the drag area CD*S of all other parts [m^2].
-    Excrescences given as a % of the geometry drag are taken on the other parts only: the sizing wing
-    drag (c_d_wing_factor) already covers the wing's own gaps and interference.
+    Excrescences given as a % of the geometry drag are split between the two by their geometry drag,
+    the others (drag area, CD, count) go to f_fixed; together they are OpenVSP's total.
     """
     _load_sized(plane, out_file=OUTPUT_FILE)
     rid = _parasite_drag()
     labels = list(vsp.GetStringResults(rid, "Comp_Label", 0))
     i_wing = labels.index(WING_NAME)
-    c_d_0_wing = vsp.GetDoubleResults(rid, "Comp_CD", 0)[i_wing]  # Sref = wing area
+    c_d_wing = vsp.GetDoubleResults(rid, "Comp_CD", 0)[i_wing]  # Sref = wing area
     comp_f = list(vsp.GetDoubleResults(rid, "Comp_f", 0))
     f_other = sum(comp_f) - comp_f[i_wing]
 
-    f_excres = 0.0
+    percent, f_excres = 0.0, 0.0
     for kind, value, f in zip(
         vsp.GetStringResults(rid, "Excres_Type", 0),
         vsp.GetDoubleResults(rid, "Excres_Input", 0),
         vsp.GetDoubleResults(rid, "Excres_f", 0),
     ):
         if kind == EXCRES_PERCENT_GEOM:
-            f_excres += value / 100 * f_other
-        elif "margin" in kind.lower():  # % of the total incl. the turbulent wing: no wing-free equivalent
+            percent += value
+        elif "margin" in kind.lower():  # % of the total incl. excrescences: not split between wing and rest
             raise ValueError(f"Excrescence type {kind!r} is not supported; use '{EXCRES_PERCENT_GEOM}' instead.")
         else:  # drag area, CD or count: independent of the wing
             f_excres += f
-    return float(c_d_0_wing), float(f_other + f_excres)
+    k = 1 + percent / 100
+    return float(k * c_d_wing), float(k * f_other + f_excres)
 
 
 @dataclass(frozen=True)
@@ -323,11 +332,12 @@ def get_vsp_model(plane: Plane) -> VspModel:
 
 
 def _load_sized(plane: Plane, *, out_file: str | Path | None) -> None:
-    """Load the .vsp3 file (unchanged on disk), set Q_VALUES and size it to the plane."""
+    """Load the .vsp3 file (unchanged on disk), set Q_VALUES and the wing's laminar flow, and size it to the plane."""
     w, h, v = plane.wing, plane.h_tail, plane.v_tail
     vsp.ClearVSPModel()
     vsp.ReadVSPFile(str(VSP3_FILE))
     set_q_values()
+    set_perc_lam({WING_NAME: plane.wing_perc_lam})
     size_model(
         wing_area=w.area,
         wing_ar=w.aspect_ratio,

@@ -54,6 +54,7 @@ class Plane:
     # geometry
     wing: Surface
     wing_airfoil: str  # NACA 4-digit code, root and tip
+    wing_perc_lam: float  # laminar flow on the wing in the OpenVSP drag build-up [% of chord]
     h_tail: Surface
     v_tail: Surface
 

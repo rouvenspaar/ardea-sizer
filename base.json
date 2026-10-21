@@ -18,7 +18,7 @@
     "electronics":       { "x": 0.803, "mass": 0.60 },
 
     "payload":           { "x": 0.638, "mass": 1.00 },
-    "fuel":              { "x": 0.465, "mass": 5.00 },
+    "fuel":              { "x": 0.465, "mass": 7.50 },
 
     "fuselage":          { "x": 0.612, "mass": 1.75 },
     "tail":              { "x": 1.252, "mass": 0.50 },
@@ -28,7 +28,7 @@
     "spare":             { "x": 0.489, "mass": 1.00 }
   },
   "engine": {
-    "p_max": 5.5,
+    "p_max": 6.0,
     "fuel_cons": 0.4,
     "prop_eff": 0.75
   },
@@ -53,10 +53,9 @@
 
     "oswald_eff": 0.8,
 
-    "c_d_wing_section": 0.0055,
-    "c_d_wing_factor": 1.4,
-
-    "f_fixed": 0.004,
+    "wing_perc_lam": 40.0,
+    "c_d_0_wing": 0.0095,
+    "f_fixed": 0.0054,
     "wing_ar": 8.0,
     "wing_tr": 0.45,
     "wing_x": 0.39,

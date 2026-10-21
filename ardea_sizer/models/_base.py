@@ -39,7 +39,7 @@ class Masses(FrozenModel):
     electronics: MassPoint
 
     payload: MassPoint
-    fuel: MassPoint  # full tank; mass is replaced by the sized fuel mass
+    fuel: MassPoint  # full tank; mass: start value of the fuel sizing, replaced by the sized fuel mass
 
     fuselage: MassPoint  # shell
     tail: MassPoint  # H + V
@@ -101,18 +101,13 @@ class Assumptions(FrozenModel):
     delta_c_l_flap: float
     flap_area_fraction: float
     oswald_eff: float
-    c_d_wing_section: float  # airfoil profile drag at cruise (XFOIL, free transition) [-]
-    c_d_wing_factor: float  # on c_d_wing_section: earlier transition, flap gap, interference [-]
-    f_fixed: float  # drag area CD*S of everything except the wing (fuselage, tails) [m^2]
+    wing_perc_lam: float  # laminar flow on the wing in the OpenVSP drag build-up [% of chord]
+    c_d_0_wing: float  # wing CD0 on its own area; start value, run_pipeline replaces it with OpenVSP's [-]
+    f_fixed: float  # drag area CD*S of everything except the wing; start value, as c_d_0_wing [m^2]
     wing_ar: float
     wing_tr: float
     wing_x: float  # root leading edge from the nose [m]
     wing_airfoil: str  # NACA 4-digit code
-
-    @property
-    def c_d_0_wing(self) -> float:
-        """Wing parasite drag, referenced to its own area [-]."""
-        return self.c_d_wing_section * self.c_d_wing_factor
 
 
 class Base(FrozenModel):

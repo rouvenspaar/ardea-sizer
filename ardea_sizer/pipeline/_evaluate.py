@@ -22,17 +22,20 @@ from ardea_sizer._constants import G
 def evaluate(
     base: Base,
     *,
-    fuel_guess: float = 6.5,
+    fuel_guess: float | None = None,
     rel_tol: float = 1e-3,
     max_iter: int = 50,
 ) -> Plane:
     """Return the plane whose fuel mass covers mission range + reserve.
 
     Solves range(fuel_mass) = target with a secant method; all design inputs come from `base`.
+    The secant starts at `fuel_guess`, by default the fuel mass in `base`.
     """
     m = base.mission
     target = m.range + m.reserve
     tol = rel_tol * abs(target)
+    if fuel_guess is None:
+        fuel_guess = base.masses.fuel.mass
 
     def run(fuel: float) -> tuple[Plane, float]:
         plane = evaluate_from_fuel_mass(base, fuel_mass=fuel)
@@ -137,6 +140,7 @@ def evaluate_from_fuel_mass(base: Base, *, fuel_mass: ArrayLike) -> Plane:
         masses=masses,
         wing=Surface(area=wing_area, aspect_ratio=a.wing_ar, taper=a.wing_tr, x_le=a.wing_x, incidence=wing_ia),
         wing_airfoil=a.wing_airfoil,
+        wing_perc_lam=a.wing_perc_lam,
         h_tail=Surface(area=t.h_area, aspect_ratio=t.h_ar, taper=t.h_tr, x_le=0.0, incidence=t.h_ia).placed(x_ac=x_ac_tail),
         v_tail=Surface(area=t.v_area, aspect_ratio=t.v_ar, taper=t.v_tr, x_le=0.0).placed(x_ac=x_ac_tail),
         c_d_0=c_d_0,
