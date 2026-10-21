@@ -6,25 +6,30 @@
     "stall_speed": 20.0
   },
   "masses": {
-    "propeller":         { "x": 0.040, "mass": 0.35 },
-    "prop_shaft":        { "x": 0.083, "mass": 0.15 },
-    "gearbox":           { "x": 0.158, "mass": 0.30 },
-    "engine":            { "x": 0.268, "mass": 3.50 },
-    "heat_shield":       { "x": 0.335, "mass": 0.00 },
-    "ecu":               { "x": 0.368, "mass": 0.10 },
-    "fuel_pump":         { "x": 0.365, "mass": 0.20 },
-    "fuel":              { "x": 0.465, "mass": 5.00 },
-    "payload":           { "x": 0.638, "mass": 1.00 },
+    "propeller":         { "x": 0.040, "mass": 0.30 },
+    "engine":            { "x": 0.268, "mass": 4.00 },
+    "heat_shield":       { "x": 0.335, "mass": 0.10 },
+    "fuel_pump":         { "x": 0.335, "mass": 0.30 },
+    "engine_mount":      { "x": 0.335, "mass": 0.30 },
+
+    "servos":            { "x": 0.335, "mass": 0.21 },
     "flight_controller": { "x": 0.803, "mass": 0.25 },
+    "battery":           { "x": 0.803, "mass": 1.00 },
     "electronics":       { "x": 0.803, "mass": 0.60 },
-    "battery":           { "x": 0.803, "mass": 0.50 },
-    "fuselage":          { "x": 0.612, "mass": 2.5 },
-    "tail":              { "x": 1.252, "mass": 0.40 },
-    "wing":              { "x": 0.489, "mass": 2.5 }
+
+    "payload":           { "x": 0.638, "mass": 1.00 },
+    "fuel":              { "x": 0.465, "mass": 5.00 },
+
+    "fuselage":          { "x": 0.612, "mass": 1.75 },
+    "tail":              { "x": 1.252, "mass": 0.50 },
+    "wing":              { "x": 0.489, "mass": 2.25 },
+
+    "cables":            { "x": 0.489, "mass": 0.50 },
+    "spare":             { "x": 0.489, "mass": 1.00 }
   },
   "engine": {
-    "p_max": 4.97,
-    "fuel_cons": 0.44,
+    "p_max": 5.5,
+    "fuel_cons": 0.4,
     "prop_eff": 0.75
   },
   "tail": {

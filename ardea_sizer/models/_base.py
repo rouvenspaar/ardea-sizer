@@ -28,20 +28,25 @@ class MassPoint(FrozenModel):
 
 class Masses(FrozenModel):
     propeller: MassPoint  # incl. variable-pitch hub
-    prop_shaft: MassPoint
-    gearbox: MassPoint
     engine: MassPoint
-    heat_shield: MassPoint
-    ecu: MassPoint
     fuel_pump: MassPoint
-    fuel: MassPoint  # full tank
-    payload: MassPoint
+    engine_mount: MassPoint
+    heat_shield: MassPoint
+
+    servos: MassPoint
     flight_controller: MassPoint
-    electronics: MassPoint  # excl. flight controller & battery
     battery: MassPoint
+    electronics: MassPoint
+
+    payload: MassPoint
+    fuel: MassPoint  # full tank; mass is replaced by the sized fuel mass
+
     fuselage: MassPoint  # shell
     tail: MassPoint  # H + V
     wing: MassPoint
+
+    cables: MassPoint
+    spare: MassPoint
 
     def dry(self) -> Iterator[tuple[str, MassPoint]]:
         """All components except fuel, as (name, MassPoint)."""
