@@ -96,7 +96,7 @@ def evaluate_from_fuel_mass(base: Base, *, fuel_mass: ArrayLike) -> Plane:
         force=force,
         q_stall=q_stall,
         c_l_max=get_c_l_max_flapped(
-            c_l_max_2d=a.c_l_max_2d_takeoff, delta_c_l_flap=a.delta_c_l_flap, flap_area_fraction=a.flap_area_fraction,
+            c_l_max_2d=a.c_l_max_2d_takeoff, delta_c_l_flap=a.delta_c_l_flap,
         ),
     )
     span = np.sqrt(a.wing_ar * wing_area)

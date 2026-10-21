@@ -28,7 +28,7 @@
     "spare":             { "x": 0.489, "mass": 1.00 }
   },
   "engine": {
-    "p_max": 6.0,
+    "p_max": 6.9,
     "fuel_cons": 0.4,
     "prop_eff": 0.75
   },
@@ -49,7 +49,6 @@
     "alpha_0_l_cruise": -1.88,
     "c_l_alpha_2d_cruise": 0.122,
     "delta_c_l_flap": 0.43,
-    "flap_area_fraction": 0.609,
 
     "oswald_eff": 0.8,
 

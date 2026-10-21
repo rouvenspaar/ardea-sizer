@@ -99,7 +99,6 @@ class Assumptions(FrozenModel):
     alpha_0_l_cruise: float  # zero-lift AoA [deg]
     c_l_alpha_2d_cruise: float  # airfoil lift slope [1/deg]
     delta_c_l_flap: float
-    flap_area_fraction: float
     oswald_eff: float
     wing_perc_lam: float  # laminar flow on the wing in the OpenVSP drag build-up [% of chord]
     c_d_0_wing: float  # wing CD0 on its own area; start value, run_pipeline replaces it with OpenVSP's [-]

@@ -140,7 +140,7 @@ def summary(plane: Plane, base: Base) -> str:
     alpha = float(get_alpha_cruise(c_l=c_l, c_l_alpha_3d=c_l_alpha, alpha_0_l=a.alpha_0_l_cruise))
     c_l_max_clean = float(get_c_l_max_3d(c_l_max_2d=a.c_l_max_2d_cruise))
     c_l_max_flap = float(get_c_l_max_flapped(
-        c_l_max_2d=a.c_l_max_2d_takeoff, delta_c_l_flap=a.delta_c_l_flap, flap_area_fraction=a.flap_area_fraction,
+        c_l_max_2d=a.c_l_max_2d_takeoff, delta_c_l_flap=a.delta_c_l_flap,
     ))
     v_stall_clean = np.sqrt(2 * weight / (rho_cruise * s * c_l_max_clean))
     # best L/D of the parabolic polar: CL = sqrt(CD0 * pi * e * AR)

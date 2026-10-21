@@ -16,10 +16,9 @@ def get_c_l_max_flapped(
     *,
     c_l_max_2d: ArrayLike,
     delta_c_l_flap: ArrayLike,
-    flap_area_fraction: ArrayLike,
 ) -> ArrayLike:
     # wing C_L,max with flaps: clean wing + 2D flap increment on the flapped area (DATCOM K_sweep = 0.92)
-    return get_c_l_max_3d(c_l_max_2d=c_l_max_2d) + flap_area_fraction * get_c_l_max_3d(c_l_max_2d=delta_c_l_flap, factor=0.92)
+    return get_c_l_max_3d(c_l_max_2d=c_l_max_2d) + get_c_l_max_3d(c_l_max_2d=delta_c_l_flap, factor=0.92)
 
 def get_wing_area(
     *,
