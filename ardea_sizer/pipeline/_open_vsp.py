@@ -66,17 +66,6 @@ def size_model(
     v_z: float | None = None,
     out_file: str | Path | None = OUTPUT_FILE,
 ) -> None:
-    """Size main wing, horizontal and vertical stabilizer of the loaded OpenVSP model.
-
-    Areas and aspect ratios are for the whole surface (both halves of the wing and the H-tail,
-    the single fin of the V-tail). Positions are the root leading edge from the nose [m];
-    a z left at None keeps the value in the file. Incidences are in degrees, positive leading edge up.
-    wing_y is the spanwise offset of each wing root from the centreline; None puts the roots on the
-    fuselage sides, so the whole wing area is outside the fuselage.
-    wing_airfoil is a NACA 4-digit code (e.g. "2412"), used at root and tip.
-    The fuselage tail boom is stretched to end just behind the stabilizers (_fit_boom).
-    The sized model is saved to out_file (None: not saved); the file it was loaded from is not touched.
-    """
     wing_id = _size_surface(WING_NAME, area=wing_area, ar=wing_ar, tr=wing_tr, x=wing_x, z=wing_z, ia=wing_ia)
     _set_naca_4(wing_id, wing_airfoil)
     vsp.Update()  # root chord and position for the fuselage width below
@@ -103,7 +92,6 @@ def _size_surface(
     z: float | None,
     ia: float | None = None,
 ) -> str:
-    """Set area, aspect ratio, taper, position and incidence of a one-section wing geom; return its id."""
     geom_id = vsp.FindGeomsWithName(name)[0]
 
     # Section values of a mirrored surface are per half: half the area, half the aspect ratio
@@ -359,10 +347,6 @@ def _load_sized(plane: Plane, *, out_file: str | Path | None) -> None:
 
 
 def _parasite_drag() -> str:
-    """Run the parasite drag build-up of the loaded model with the flow conditions saved in the file.
-
-    Applies analysis-only changes to the model, so call it after saving. Returns the results id.
-    """
     wing_id = vsp.FindGeomsWithName(WING_NAME)[0]
 
     for name in EXCLUDE:

@@ -12,15 +12,6 @@ def run_pipeline(
     max_iter: int = 10,
     verbose: bool = True,
 ) -> tuple[Plane, Base]:
-    """Size the plane and feed the OpenVSP parasite drag back until it settles.
-
-    Starts from c_d_0_wing and f_fixed in `base`: evaluate -> OpenVSP drag of that plane -> evaluate
-    again with it ... until the plane's CD0 changes by less than `abs_tol`. Both drag parts come from
-    the OpenVSP build-up (wing with assumptions.wing_perc_lam laminar flow).
-    By default the fuel is sized for the mission (`evaluate`); with `fuel_mass` it is fixed
-    and the range follows (`evaluate_from_fuel_mass`).
-    Returns the converged plane and the base holding the drag values it was sized with.
-    """
     for count in range(1, max_iter + 1):
         if fuel_mass is None:
             plane = evaluate(base)

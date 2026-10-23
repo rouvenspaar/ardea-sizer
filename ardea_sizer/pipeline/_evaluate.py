@@ -26,11 +26,6 @@ def evaluate(
     rel_tol: float = 1e-3,
     max_iter: int = 50,
 ) -> Plane:
-    """Return the plane whose fuel mass covers mission range + reserve.
-
-    Solves range(fuel_mass) = target with a secant method; all design inputs come from `base`.
-    The secant starts at `fuel_guess`, by default the fuel mass in `base`.
-    """
     m = base.mission
     target = m.range + m.reserve
     tol = rel_tol * abs(target)
@@ -79,7 +74,7 @@ def mission_segments(m: Mission) -> list[TimeSegment | FlightSegment]:
     ]
 
 def evaluate_from_fuel_mass(base: Base, *, fuel_mass: ArrayLike) -> Plane:
-    """Choose AR & fuel mass -> MTOW -> wing -> stability -> drag -> range -> power."""
+    """choose AR & fuel mass -> MTOW -> wing -> stability -> drag -> range -> power."""
     m, e, a = base.mission, base.engine, base.assumptions
 
     rho_takeoff = get_isa_density(altitude=FIELD_ALTITUDE)

@@ -1,7 +1,7 @@
 {
   "mission": {
     "range": 1000000.0,
-    "reserve": 50000.0,
+    "reserve": 5000.0,
     "cruise_speed": 83.33,
     "stall_speed": 20.0
   },
@@ -25,7 +25,7 @@
     "wing":              { "x": 0.489, "mass": 2.25 },
 
     "cables":            { "x": 0.489, "mass": 0.50 },
-    "spare":             { "x": 0.489, "mass": 1.00 }
+    "spare":             { "x": 0.489, "mass": 0.75 }
   },
   "engine": {
     "p_max": 6.9,
@@ -34,14 +34,14 @@
   },
   "tail": {
     "arm_length": 1.6,
-    "h_area": 0.08109,
+    "h_area": 0.085,
     "h_ar": 4.5,
     "h_tr": 0.8,
-    "h_ia": -0.1675,
-    "v_area": 0.0304,
+    "h_ia": -0.13,
+    "v_area": 0.0325,
     "v_ar": 3.0,
     "v_tr": 1,
-    "downforce": 9.5
+    "downforce": 9.3
   },
   "assumptions": {
     "c_l_max_2d_takeoff": 1.33,
